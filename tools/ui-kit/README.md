@@ -74,3 +74,21 @@ To refresh only the page (renderer or layout change, no Studio change), run step
   their owner is set in `RF_STATUS` in build.mjs.
 - **Components** are listed in `components` in build.mjs by gui key and child path. A path that no longer exists is
   reported as missing in the build summary.
+
+## Target design (v2)
+
+`docs/ui-kit/v2/index.html` is the proposed redesign that follows the UI audit (2026-11-08). It is a target, not an
+export: nothing in it is built in Studio yet, and `build.mjs` does not touch it. The page above stays the record of
+the live place.
+
+- **Source.** A static export of the Claude Design canvas "Woven UI kit", the editable source. Change the canvas
+  first, then re-export, so the two stay in step.
+- **Assets.** It reuses the images in `docs/ui-kit/assets` (by asset id) and the fonts in `assets/fonts.css`. The
+  only new file is `v2/book-spread.png`: the Book art (studio/118181077777367) cropped, with the old two-column rules
+  removed from the left page.
+- **What is real.** Weave recipes and Fireball's numbers (65 mana, range 60, 15 s ready window) come from the docs.
+  Bracketed labels such as [Player] or [Form 1] are placeholders; levels, kills, Marks and timers are examples.
+- **Open choices** it assumes: Air drawn gold (its mobile medallion) rather than cream (the Book), and the composer
+  in the credits.
+- **Building toward it.** Tokens go in one `Shared/WovenTheme` module and components in a `Shared/WovenUI` kit
+  grown from `ButtonTemplateView`. When a screen is built, re-export the place and rebuild the main page as above.

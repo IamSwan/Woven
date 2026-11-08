@@ -512,12 +512,13 @@ main{max-width:1240px;margin:0 auto;padding:20px}section{margin:0 0 48px}h2{bord
 .badge{font-size:11px;border-radius:10px;padding:1px 8px;background:var(--panel2);white-space:nowrap}.b-live{background:#24563a}.b-warder-mode{background:#4b3b6e}.b-legacy{background:#6a3a2c}.b-unknown{background:#555}.b-code{background:#5a4a20}.b-runtime{background:#3a3f4f}
 #tip{position:fixed;z-index:100;background:#000;color:#fff;font:12px/1.35 ui-monospace,Consolas,monospace;padding:6px 8px;border-radius:5px;white-space:pre;pointer-events:none;max-width:70vw;overflow:hidden;text-overflow:ellipsis}
 </style></head><body>
-<div class="top"><b>Woven UI kit</b><nav>${toc.map(([id, t]) => `<a href="#${id}">${t}</a>`).join('')}</nav>
+<div class="top"><b>Woven UI kit</b><nav>${toc.map(([id, t]) => `<a href="#${id}">${t}</a>`).join('')}<a href="v2/index.html">Target design (v2)</a></nav>
 <span class="seg" role="group" aria-label="Viewport"><button data-vp="desktop" aria-pressed="false">1920×1080</button><button data-vp="laptop" aria-pressed="true">1280×720</button><button data-vp="phone" aria-pressed="false">Phone 844×390</button></span>
 <label><input type="checkbox" id="show-hidden"> show hidden elements</label></div>
 <main>
 <section id="header"><h1>Woven UI kit</h1>
 <p>The authored UI of <b>${esc(ui.placeName)}</b> (PlaceId ${esc(ui.placeId)}, GameId ${esc(ui.gameId)}, place version ${esc(ui.placeVersion)}), rendered from a read-only export of Roblox Studio. It shows every ScreenGui in StarterGui and the ReplicatedFirst PlayHUD and SaveSlotHUD as they are authored, before any script changes them.</p>
+<p>The proposed redesign that follows the UI audit is in <a href="v2/index.html">v2/index.html</a>. It is a target, not built yet; this page stays the record of the live place.</p>
 <p class="small muted">Exported ${esc(ui.exportedAt)} · page built ${now} · ${ui.guis.length} ScreenGuis · ${guiObjects.length} GuiObjects · ${Object.keys(colors).length} colours · ${Object.keys(type).length} type styles · ${ids.length} images (${fromStudio.length} read in Studio).<br>
 ${unavailable.length ? `<b class="fail">Images unavailable (${unavailable.length}):</b> ${unavailable.map((id) => `<code>${esc(id)}</code>`).join(', ')}. They draw as labelled boxes.<br>` : ''}
 Rebuild: see <a href="../../tools/ui-kit/README.md">tools/ui-kit/README.md</a> (export through the roblox-studio MCP, then <code>node tools/ui-kit/build.mjs</code>). Hover any element in a component or screen to see its path and size.</p></section>

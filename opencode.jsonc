@@ -1,0 +1,23 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "roblox-studio": {
+      "type": "local",
+      "command": [
+        "cmd.exe",
+        "/c",
+        "C:\\Users\\iamswan\\AppData\\Local\\Roblox\\mcp.bat"
+      ],
+      "enabled": true
+    }
+  ,
+    "blender": {
+      "type": "local",
+      "command": [
+        "C:\\Users\\iamswan\\AppData\\Local\\Microsoft\\WinGet\\Packages\\astral-sh.uv_Microsoft.Winget.Source_8wekyb3d8bbwe\\uvx.exe",
+        "mcp-for-blender"
+      ],
+      "enabled": false
+    }
+  }
+}

@@ -1,0 +1,60 @@
+# Woven UI kit: how to rebuild
+
+`docs/ui-kit/index.html` is a self-contained preview of Woven's authored UI: tokens, components and every
+ScreenGui on a mock screen. It is generated from the live Studio place. Open it by double-click (file://); no server.
+
+The export is read-only. It changes nothing in the place and needs no Play session.
+
+## Files
+
+| File | Role |
+|---|---|
+| `tools/ui-kit/export.luau` | Luau run in Studio (Edit) through the roblox-studio MCP. Modes: `list`, `gui` (one ScreenGui), `meta` (place info and the ButtonTemplateView/TopButtonTheme source), `sizes` (native image sizes via EditableImage), `runtime` (scripts that name each runtime-built gui). |
+| `tools/ui-kit/run-export.js` | Code Mode script: runs every export mode and posts the results to the receiver. |
+| `tools/ui-kit/receive.mjs` | Localhost receiver (127.0.0.1:47821). Serves `export.luau` and the runtime gui names, merges the posted chunks into `docs/ui-kit/data/ui.json`, then exits. It keeps the JSON out of the agent's context. |
+| `tools/ui-kit/docs.mjs` | Reads the UI map in `docs/client.md` §5 (owner, status, runtime-built guis). |
+| `tools/ui-kit/build.mjs` | Builds the page from `ui.json`: downloads missing images, writes tinted copies, embeds fonts, derives tokens. |
+| `tools/ui-kit/renderer.js`, `page.js` | Browser code that build.mjs inlines into the page (layout renderer and page controls). |
+| `docs/ui-kit/data/ui.json` | Raw export. |
+| `docs/ui-kit/assets/` | `<assetId>.png` thumbnails, `tint/<id>_<hex>.png`, `images.json` (download manifest), `fonts.css` (Roblox fonts as data URIs). |
+
+## Steps
+
+1. Open the place in Studio with the roblox-studio MCP connected.
+2. Start the receiver from the project folder and leave it running:
+   ```
+   node tools/ui-kit/receive.mjs
+   ```
+3. In an agent session with the roblox-studio MCP, call the Code Mode `execute` tool with the **whole contents of
+   `tools/ui-kit/run-export.js`** as `code`. The runtime cannot load files or use `eval`, so paste the file. It
+   finds the Woven studio by name, so the studio id does not matter. It returns a summary such as
+   `{ guis: 23, images: 70, sizeFailures: 64, runtimeNames: 30, merged: "docs\\ui-kit\\data\\ui.json: ..." }`.
+   The receiver then writes `docs/ui-kit/data/ui.json` and exits.
+4. Build the page:
+   ```
+   node tools/ui-kit/build.mjs
+   ```
+   It prints the counts: ScreenGuis, GuiObjects, colours, fonts, images downloaded and failed, slice sizes exact or
+   estimated, and components found.
+5. Open `docs/ui-kit/index.html`.
+
+To refresh only the page (renderer or layout change, no Studio change), run step 4 alone.
+
+## Notes
+
+- **Images.** Downloaded with GET requests to the public `thumbnails.roblox.com/v1/assets` endpoint (700x700 box,
+  aspect kept) and its CDN, with a generic User-Agent. A thumbnail that is still `Pending` is retried on the next
+  build: delete nothing, just run build.mjs again. Downloaded files are kept; delete `docs/ui-kit/assets/<id>.png`
+  and its entry in `assets/images.json` to force a fresh copy.
+- **Native sizes.** Slice centres and rect crops are in the image's native pixels. The export asks Studio
+  (EditableImage) for them, but Studio can only open images the place owner may load. For the rest, build.mjs
+  estimates the native size from the thumbnail aspect (the smallest of 128/256/512/1024 that holds every slice
+  coordinate). The page lists those as approximate.
+- **Fonts.** build.mjs copies the Roblox font files that the page uses from the newest
+  `%LOCALAPPDATA%\Roblox\Versions\*\content\fonts` (override with `ROBLOX_FONTS_DIR`). Fonts are embedded as data
+  URIs because browsers block file:// font loads. Without a Studio install it falls back to Google Fonts
+  look-alikes. The font files are Roblox's: keep the kit internal.
+- **Status labels** come from the table in `docs/client.md` §5. The two ReplicatedFirst guis are not in that table;
+  their owner is set in `RF_STATUS` in build.mjs.
+- **Components** are listed in `components` in build.mjs by gui key and child path. A path that no longer exists is
+  reported as missing in the build summary.

@@ -88,6 +88,9 @@ the live place.
   removed from the left page.
 - **What is real.** Weave recipes and Fireball's numbers (65 mana, range 60, 15 s ready window) come from the docs.
   Bracketed labels such as [Player] or [Form 1] are placeholders; levels, kills, Marks and timers are examples.
+- **Top bar.** The V1 `TopHUD` is kept unchanged: same images (with their tints), layout from the export, BuilderSans
+  and key hints, Quests and Inventory still dimmed. v2 only adds information: live level and XP, a badge for
+  unspent skill points on the Book slot, and a line under the bar for time of day and Marks.
 - **Open choices** it assumes: Air drawn gold (its mobile medallion) rather than cream (the Book), and the composer
   in the credits.
 - **Building toward it.** Tokens go in one `Shared/WovenTheme` module and components in a `Shared/WovenUI` kit

@@ -111,7 +111,7 @@ In the same task as the change, update:
 - [systems.md](systems.md) when a system's owner scripts change;
 - "Legacy and dead code" sections when something is deleted or revived;
 - the "Open questions" sections when a question is answered.
-- the UI kit ([ui-kit/index.html](ui-kit/index.html)) when a ScreenGui changes: follow [tools/ui-kit/README.md](../tools/ui-kit/README.md) (export through the Studio MCP, then `node tools/ui-kit/build.mjs`). The kit embeds Roblox's own font files, so keep it internal.
+- the UI kit ([ui-kit/index.html](ui-kit/index.html)) when a ScreenGui changes: follow [tools/ui-kit/README.md](../tools/ui-kit/README.md) (export through the Studio MCP, then `node tools/ui-kit/build.mjs`). The kit embeds Roblox's own font files, so keep it internal. The target design part comes from `tools/ui-kit/target.html`; when a screen's plan changes, edit that file (and its `TARGET_MAP` row in build.mjs) and rebuild.
 
 Keep docs in normal prose. Cite code as `Service/Path/Script:line`, and mark guesses as guesses.
 

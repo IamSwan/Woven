@@ -1,4 +1,5 @@
-// build.mjs: builds docs/ui-kit/index.html from docs/ui-kit/data/ui.json (the Studio export).
+// build.mjs: builds docs/ui-kit/index.html from docs/ui-kit/data/ui.json (the Studio export) and tools/ui-kit/target.html.
+// The page has two parts: Part 1 "Target design" (target.html, inlined as it is) and Part 2 "Live place" (generated).
 // Uses Studio pixel reads (assets/studio) where present, downloads the rest through the public thumbnails API
 // (placeholder thumbnails count as failed), pre-tints images that use ImageColor3, embeds the
 // Roblox fonts found in the local Studio install, derives design tokens and inlines renderer.js and page.js.
@@ -409,6 +410,63 @@ const statusOf = (g) => RF_STATUS[g.key] || uiMap.byName[g.name] || { owner: '?'
 const KIND_ORDER = { Live: 0, 'Warder mode': 1, Legacy: 2, Unknown: 3 };
 const screens = ui.guis.slice().sort((a, b) => KIND_ORDER[statusOf(a).statusKind] - KIND_ORDER[statusOf(b).statusKind] || (a.props.DisplayOrder || 0) - (b.props.DisplayOrder || 0));
 
+// ---------- Part 1: target design (tools/ui-kit/target.html) ----------
+const targetSrc = fs.readFileSync(path.join(TOOLS, 'target.html'), 'utf8').replace(/<!--[\s\S]*?-->/, '');
+const targetCss = [...targetSrc.matchAll(/<style>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join('\n');
+const targetJs = (targetSrc.match(/<script>([\s\S]*?)<\/script>/) || [])[1] || '';
+const targetHtml = targetSrc.replace(/<style>[\s\S]*?<\/style>|<script>[\s\S]*?<\/script>/g, '').trim();
+// Target sections: id (without the t- prefix) and the short name used in the nav and in the links from the live part.
+const TARGET_NAV = [['overview', 'Overview'], ['foundations', 'Foundations'], ['components', 'Components'], ['combat-hud', 'Combat HUD'], ['channeling', 'Channeling'], ['book', 'Book'], ['mobile-explore', 'Mobile: exploring'], ['mobile-channel', 'Mobile: channeling'], ['guardian', 'Guardian HUD'], ['entry', 'Entry flow']];
+const targetIds = new Set([...targetHtml.matchAll(/<section id="t-([\w-]+)"/g)].map((m) => m[1]));
+const targetNavMissing = TARGET_NAV.map(([id]) => id).filter((id) => !targetIds.has(id)).concat([...targetIds].filter((id) => !TARGET_NAV.some(([n]) => n === id)));
+const targetAssets = [...new Set([...targetSrc.matchAll(/assets\/[\w./-]+\.png/g)].map((m) => m[0]))];
+const targetAssetsMissing = targetAssets.filter((a) => !fs.existsSync(path.join(KIT_DIR, a)));
+
+// TARGET_MAP: for each live gui (ScreenGui or runtime-built), how Part 1 treats it. Keyed by gui name; the two
+// PlayHUD copies share a name, so they are keyed by full path. A value is a list of {kind, note, to}:
+//   K = kept (the V1 screen stays as it is), R = reworked (redesigned in Part 1), N = no target yet.
+// `to` lists the target sections (ids in TARGET_NAV) that show it. Names come from ui.json and docs/client.md §5.
+const K = (note, ...to) => ({ kind: 'kept', note, to });
+const R = (note, ...to) => ({ kind: 'reworked', note, to });
+const N = (note = '') => ({ kind: 'none', note, to: [] });
+const TARGET_MAP = {
+  // ScreenGuis, StarterGui
+  TopHUD: [K('V1 top bar unchanged; the target only adds level and XP, a skill-point badge and a time and Marks line', 'combat-hud')],
+  MainHUD: [R('vitals plate with the stamina bar inside; the duplicate XP bar is removed', 'combat-hud', 'components')],
+  QuickSlotHUD: [R('recipe-glyph action bar and quick-slot states', 'combat-hud', 'components')],
+  StaminaGui: [R('stamina moves into the vitals plate', 'components', 'combat-hud')],
+  CircleUIPosition: [R('Circle roster', 'combat-hud')],
+  GuardianBondHUD: [R('Bond card on the Channeler combat HUD; bond XP on the Guardian bonded panel', 'combat-hud', 'guardian')],
+  NewBookHUD: [R('one tab column and the new Weaves page', 'book')],
+  ButtonTemplateHUD: [R('bound-strip buttons', 'components')],
+  MobileChannelHUD: [R('Channel, Sprint and Cast buttons at 44 px or more', 'mobile-explore', 'mobile-channel')],
+  MobileElements: [R('element buttons as the Book pentagram around Confirm', 'mobile-channel')],
+  MobilePVPPlacement: [R('PvP chip as a 44 px target', 'mobile-explore')],
+  WarderQuickSlotHUD: [R('sword-form bar', 'guardian')],
+  ShopHUD: [N('Marks shop')],
+  MobileLayoutEditor: [N('layout editor')],
+  TutorialTextPosition: [N('tutorial text')],
+  WarderTestHUD: [N('Warder test and debug panel')],
+  WarderSwordFormHUD: [N('sword-form drawing canvas')],
+  WarderShowcaseHUD: [N('showcase caption')],
+  SettingsHUD: [N('legacy gifting panel; Settings lives in the Book')],
+  NewQuickSlot: [N('legacy, dead')],
+  'StarterGui/PlayHUD': [N('legacy duplicate of ReplicatedFirst/PlayHUD')],
+  // ScreenGuis, ReplicatedFirst
+  'ReplicatedFirst/PlayHUD': [R('save cards', 'entry'), K('Credits screen stays as V1', 'entry')],
+  'ReplicatedFirst/SaveSlotHUD': [R('class picker that states the choice is permanent', 'entry')],
+  // Runtime-built guis (docs/client.md §5), only the ones a board covers
+  MinimapHUD: [K('V1 minimap; MinimapController builds it, the boards only mark its place', 'combat-hud', 'mobile-explore')],
+  ChannelGui: [R('thread strip and live recipe match', 'channeling')],
+  HeldWardHUD: [R('held weaves share one meter', 'channeling')],
+  CircleControllerInvite: [R('Circle invite toast', 'components')],
+};
+const TARGET_LABEL = { kept: 'Kept in target', reworked: 'Reworked in target', none: 'No target yet' };
+const targetEntries = (g) => TARGET_MAP[g.key] || TARGET_MAP[g.name];
+const targetName = Object.fromEntries(TARGET_NAV);
+const targetBadges = (entries) => (entries || [N()]).map((e) => `<span class="tgt"><span class="badge b-t-${e.kind}">${TARGET_LABEL[e.kind]}</span>${e.to.length ? ' ' + e.to.map((id) => `<a href="#t-${id}">${esc(targetName[id] || id)}</a>`).join(', ') : ''}${e.note ? ` <span class="muted">${esc(e.note)}</span>` : ''}</span>`).join(' ');
+const mapBadSections = [...new Set(Object.values(TARGET_MAP).flat().flatMap((e) => e.to).filter((id) => !targetIds.has(id)))];
+
 // ---------- HTML ----------
 const now = new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
 const sw = (hex) => `<span class="sw" style="background:${esc(hex)}"></span>`;
@@ -439,15 +497,24 @@ const screenHtml = screens.map((g) => {
   const scripts = all.filter((e) => e.gui === g && /Script$/.test(e.node.class)).map((e) => e.node.name);
   return `<article class="scr" id="scr-${esc(g.key.replace(/\W/g, '-'))}"><header><h3>${esc(g.name)}</h3>${badge(s.statusKind)}<span class="muted">${esc(g.key)}</span></header>
 <p class="small"><b>Owner:</b> ${esc(s.owner)}${s.others && s.others !== '–' ? ` · <b>Other writers:</b> ${esc(s.others)}` : ''}<br><b>Purpose:</b> ${esc(s.purpose)} · <b>Status:</b> ${esc(s.status)}</p>
+<p class="small"><b>Target:</b> ${targetBadges(targetEntries(g))}</p>
 <p class="small muted">Enabled ${p.Enabled} · DisplayOrder ${p.DisplayOrder} · IgnoreGuiInset ${p.IgnoreGuiInset} · ResetOnSpawn ${p.ResetOnSpawn} · ScreenInsets ${esc(p.ScreenInsets)} · ZIndexBehavior ${esc(p.ZIndexBehavior)} · ${count} GuiObjects${scripts.length ? ' · scripts inside: ' + esc(scripts.join(', ')) : ''}</p>
 <div class="screen-host" data-screen="${esc(g.key)}"></div></article>`;
 }).join('\n');
 const runtimeRows = uiMap.runtime.map((r) => {
   const hits = ui.runtimeOwners?.[r.name] || [];
   const owners = hits.length ? hits.map((h) => `<code>${esc(h.path)}:${h.line}</code>${h.enabled === false ? ' (disabled)' : ''}`).join('<br>') : '<span class="muted">no string match in client scripts</span>';
-  return `<tr><td><code>${esc(r.name)}</code></td><td>${esc(r.group)}</td><td>${owners}</td><td>${esc(r.note)}</td><td><span class="badge b-runtime">built at runtime, not rendered</span></td></tr>`;
+  return `<tr><td><code>${esc(r.name)}</code></td><td>${esc(r.group)}</td><td>${owners}</td><td>${esc(r.note)}</td><td><span class="badge b-runtime">built at runtime, not rendered</span><br>${targetBadges(TARGET_MAP[r.name])}</td></tr>`;
 }).join('');
 const toc = [['header', 'About'], ['foundations', 'Foundations'], ['components', 'Components'], ['screens', 'Screens'], ['runtime', 'Runtime-built UI'], ['approx', 'Approximations']];
+const legend = [
+  ['b-t-kept', 'Kept in target', 'the live screen stays as it is (V1)'],
+  ['b-t-reworked', 'Reworked in target', 'redesigned in Part 1, with links to the boards'],
+  ['b-t-none', 'No target yet', 'no board in Part 1'],
+  ['b-live', 'Live', 'in use'],
+  ['b-warder-mode', 'Warder mode', 'only in Guardian mode'],
+  ['b-legacy', 'Legacy', 'dead or duplicate (the last three come from docs/client.md §5)'],
+].map(([c, t, d]) => `<span class="badge ${c}">${t}</span> ${esc(d)}`).join(' · ');
 const staticApprox = [
   unavailable.length ? `${unavailable.length} image(s) are unavailable and draw as labelled boxes: ${unavailable.join(', ')}.` : 'Every referenced image is available.',
   `${fromStudio.length} image(s) are exact pixels read in Studio (EditableImage), because the public thumbnail is Roblox's "image unavailable" placeholder: ${fromStudio.join(', ') || 'none'}.`,
@@ -477,7 +544,9 @@ a{color:var(--accent)}code{font:12px/1.3 ui-monospace,Consolas,monospace;color:#
 .top{position:sticky;top:0;z-index:50;background:rgba(20,20,23,.95);border-bottom:1px solid var(--line);display:flex;gap:16px;align-items:center;padding:8px 20px;flex-wrap:wrap}
 .top nav a{margin-right:12px;text-decoration:none}.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
 .seg button{background:none;border:0;color:var(--fg);padding:5px 10px;cursor:pointer;font:inherit}.seg button[aria-pressed=true]{background:var(--accent);color:#1b1408}
-main{max-width:1240px;margin:0 auto;padding:20px}section{margin:0 0 48px}h2{border-bottom:1px solid var(--line);padding-bottom:6px}
+#live{max-width:1240px;margin:0 auto;padding:20px}#intro-wrap{max-width:1680px;margin:0 auto;padding:20px 24px 0}#intro{margin:0}main section{scroll-margin-top:96px}section{margin:0 0 48px}h2{border-bottom:1px solid var(--line);padding-bottom:6px}
+.top nav{display:flex;flex-wrap:wrap;align-items:center}.top .grp{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin-right:8px}.top label{display:flex;gap:6px;align-items:center}
+#live{border-top:1px solid var(--line);margin-top:48px}.tgt{display:inline-block;margin-right:10px}
 .muted{color:var(--muted)}.small{font-size:12.5px}.num{text-align:right;font-variant-numeric:tabular-nums}.fail{color:#e07a6a}
 .tbl-wrap{overflow-x:auto}.tbl{border-collapse:collapse;width:100%;font-size:13px}.tbl td,.tbl th{border-bottom:1px solid var(--line);padding:5px 8px;vertical-align:top;text-align:left}
 .paths{font-size:11px;max-width:460px;word-break:break-all}
@@ -509,16 +578,24 @@ main{max-width:1240px;margin:0 auto;padding:20px}section{margin:0 0 48px}h2{bord
 .rn-viewport{background-image:repeating-linear-gradient(-45deg,rgba(255,255,255,.08) 0 4px,transparent 4px 10px)}
 .rn-hidden{outline:1px dashed rgba(120,200,255,.8);outline-offset:-1px}
 .rn-hover{outline:2px solid #ffcc33 !important;outline-offset:-1px}
-.badge{font-size:11px;border-radius:10px;padding:1px 8px;background:var(--panel2);white-space:nowrap}.b-live{background:#24563a}.b-warder-mode{background:#4b3b6e}.b-legacy{background:#6a3a2c}.b-unknown{background:#555}.b-code{background:#5a4a20}.b-runtime{background:#3a3f4f}
+.badge{font-size:11px;border-radius:10px;padding:1px 8px;background:var(--panel2);white-space:nowrap}.b-live{background:#24563a}.b-warder-mode{background:#4b3b6e}.b-legacy{background:#6a3a2c}.b-unknown{background:#555}.b-code{background:#5a4a20}.b-runtime{background:#3a3f4f}.b-t-kept{background:#2f4d63}.b-t-reworked{background:#4b3473}.b-t-none{background:#3a3a40;color:var(--muted)}
 #tip{position:fixed;z-index:100;background:#000;color:#fff;font:12px/1.35 ui-monospace,Consolas,monospace;padding:6px 8px;border-radius:5px;white-space:pre;pointer-events:none;max-width:70vw;overflow:hidden;text-overflow:ellipsis}
-</style></head><body>
-<div class="top"><b>Woven UI kit</b><nav>${toc.map(([id, t]) => `<a href="#${id}">${t}</a>`).join('')}<a href="v2/index.html">Target design (v2)</a></nav>
-<span class="seg" role="group" aria-label="Viewport"><button data-vp="desktop" aria-pressed="false">1920×1080</button><button data-vp="laptop" aria-pressed="true">1280×720</button><button data-vp="phone" aria-pressed="false">Phone 844×390</button></span>
-<label><input type="checkbox" id="show-hidden"> show hidden elements</label></div>
+</style>
+<style>${targetCss}</style></head><body>
+<div class="top"><b>Woven UI kit</b>
+<nav><span class="grp">Target</span>${TARGET_NAV.map(([id, t]) => `<a href="#t-${id}">${esc(t)}</a>`).join('')}</nav>
+<nav><span class="grp">Live</span>${toc.map(([id, t]) => `<a href="#${id}">${t}</a>`).join('')}</nav>
+<span class="seg" role="group" aria-label="Live viewport"><button data-vp="desktop" aria-pressed="false">1920×1080</button><button data-vp="laptop" aria-pressed="true">1280×720</button><button data-vp="phone" aria-pressed="false">Phone 844×390</button></span>
+<label><span class="grp">Live</span><input type="checkbox" id="show-hidden"> show hidden elements</label>
+<label><span class="grp">Target</span><input type="checkbox" id="actual"> actual size</label></div>
 <main>
-<section id="header"><h1>Woven UI kit</h1>
+<div id="intro-wrap"><section id="intro"><h1>Woven UI kit</h1>
+<p>This page has two parts. <a href="#t-overview">Part 1, the target design</a>, is what we want in game: new and reworked UI is built toward it. <a href="#header">Part 2, the live place</a>, is a read-only export of the UI that exists in Roblox Studio today, and stays the record of the place. Each live screen in Part 2 says whether the target keeps it, reworks it or has no board for it yet.</p>
+<p class="small">Status legend: ${legend}.</p></section></div>
+${targetHtml}
+<div id="live">
+<section id="header"><h1>Part 2: Live place (Studio export)</h1>
 <p>The authored UI of <b>${esc(ui.placeName)}</b> (PlaceId ${esc(ui.placeId)}, GameId ${esc(ui.gameId)}, place version ${esc(ui.placeVersion)}), rendered from a read-only export of Roblox Studio. It shows every ScreenGui in StarterGui and the ReplicatedFirst PlayHUD and SaveSlotHUD as they are authored, before any script changes them.</p>
-<p>The proposed redesign that follows the UI audit is in <a href="v2/index.html">v2/index.html</a>. It is a target, not built yet; this page stays the record of the live place.</p>
 <p class="small muted">Exported ${esc(ui.exportedAt)} · page built ${now} · ${ui.guis.length} ScreenGuis · ${guiObjects.length} GuiObjects · ${Object.keys(colors).length} colours · ${Object.keys(type).length} type styles · ${ids.length} images (${fromStudio.length} read in Studio).<br>
 ${unavailable.length ? `<b class="fail">Images unavailable (${unavailable.length}):</b> ${unavailable.map((id) => `<code>${esc(id)}</code>`).join(', ')}. They draw as labelled boxes.<br>` : ''}
 Rebuild: see <a href="../../tools/ui-kit/README.md">tools/ui-kit/README.md</a> (export through the roblox-studio MCP, then <code>node tools/ui-kit/build.mjs</code>). Hover any element in a component or screen to see its path and size.</p></section>
@@ -544,17 +621,20 @@ ${screenHtml}</section>
 
 <section id="approx"><h2>Approximations</h2><ul>${staticApprox.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>
 <h4>Hit by the current view</h4><ul id="approx-live"><li>Rendering…</li></ul></section>
+</div>
 </main>
 <div id="tip" hidden></div>
 <script>window.KIT=${JSON.stringify(kitData).replace(/</g, '\\u003c')};</script>
 <script>${inline(fs.readFileSync(path.join(TOOLS, 'renderer.js'), 'utf8'))}</script>
 <script>${inline(fs.readFileSync(path.join(TOOLS, 'page.js'), 'utf8'))}</script>
+<script>${inline(targetJs)}</script>
 </body></html>
 `;
 fs.writeFileSync(path.join(KIT_DIR, 'index.html'), html);
 
 // ---------- summary ----------
 const unmapped = ui.guis.filter((g) => statusOf(g).statusKind === 'Unknown').map((g) => g.key);
+const noTarget = ui.guis.filter((g) => !targetEntries(g)).map((g) => g.key);
 console.log([
   `ScreenGuis exported: ${ui.guis.length}`,
   `GuiObjects exported: ${guiObjects.length}`,
@@ -567,5 +647,7 @@ console.log([
   `Fonts: ${fontReport.map((f) => `${f.name}=${f.embedded.length ? 'embedded ' + f.embedded.length : f.web || 'generic'}`).join(', ')}${fontsDir ? '' : ' (Studio fonts dir not found)'}`,
   `Components: ${components.length} (${compMissing.length} missing${compMissing.length ? ': ' + compMissing.join(', ') : ''}) · code tokens parsed: button ${tokOk.button}, top bar ${tokOk.top}`,
   `Screens without a client.md status: ${unmapped.length ? unmapped.join(', ') : 'none'}`,
+  `Target part: ${targetIds.size} sections (nav mismatches: ${targetNavMissing.length ? targetNavMissing.join(', ') : 'none'}) · ${targetAssets.length} local images (missing: ${targetAssetsMissing.length ? targetAssetsMissing.join(', ') : 'none'})`,
+  `Target map: ${ui.guis.filter((g) => targetEntries(g)).length}/${ui.guis.length} ScreenGuis mapped${noTarget.length ? ' (unmapped: ' + noTarget.join(', ') + ')' : ''} · ${uiMap.runtime.filter((r) => TARGET_MAP[r.name]).length}/${uiMap.runtime.length} runtime guis mapped · bad section links: ${mapBadSections.length ? mapBadSections.join(', ') : 'none'}`,
   `Wrote ${rel(path.join(KIT_DIR, 'index.html'))} (${(Buffer.byteLength(html) / 1024).toFixed(0)} KB)`,
 ].join('\n'));

@@ -49,8 +49,7 @@ Trollocs roam and raid the village at night. Players can link into circles, set 
 | [client.md](client.md) | Client controllers, input, UI ownership, the VFX pattern |
 | [world.md](world.md) | Map regions, named anchors, tags, place settings, ServerStorage contents |
 | [workflow.md](workflow.md) | How to make, check and ship a change; backups; cleanup |
-| [ui-kit/index.html](ui-kit/index.html) | The current UI rendered from the place: colours, fonts, images, components and every authored screen (open in a browser) |
-| [ui-kit/v2/index.html](ui-kit/v2/index.html) | The target redesign from the UI audit: tokens, components and the new HUD, channeling, Book, mobile, Guardian and entry screens. Not built yet |
+| [ui-kit/index.html](ui-kit/index.html) | The UI kit (open in a browser): the target design we build toward in game (tokens, components, HUD, channeling, Book, mobile, Guardian and entry screens), then the live UI rendered from the place, each live screen marked kept, reworked or no target yet |
 
 ## Glossary
 

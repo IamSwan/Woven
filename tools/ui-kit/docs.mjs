@@ -19,7 +19,7 @@ const strip = (s) => s.replace(/\*\*/g, '').replace(/`/g, '').trim();
 export function readUiMap() {
   const sec = section5();
   const byName = {};
-  for (const line of sec.split('\n')) {
+  for (const line of sec.split(/\r?\n/)) {
     if (!line.startsWith('| ') || line.startsWith('| ScreenGui') || line.startsWith('|---')) continue;
     const cells = line.slice(1, -1).split(' | ').map((c) => c.trim());
     if (cells.length < 6) continue;
@@ -33,7 +33,7 @@ export function readUiMap() {
   }
   const runtime = [];
   const list = sec.slice(sec.indexOf('Runtime-created guis'));
-  for (const line of list.split('\n')) {
+  for (const line of list.split(/\r?\n/)) {
     const m = line.match(/^- (.+?):\s(.*)$/);
     if (!m) continue;
     const group = strip(m[1]);

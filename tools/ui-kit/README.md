@@ -1,7 +1,8 @@
 # Woven UI kit: how to rebuild
 
-`docs/ui-kit/index.html` is a self-contained preview of Woven's authored UI: tokens, components and every
-ScreenGui on a mock screen. It is generated from the live Studio place. Open it by double-click (file://); no server.
+`docs/ui-kit/index.html` is one self-contained page with two parts: the target design (from `tools/ui-kit/target.html`)
+and the live place (generated from the Studio export: tokens, components and every ScreenGui on a mock screen).
+Open it by double-click (file://); no server.
 
 The export is read-only. It changes nothing in the place and needs no Play session.
 
@@ -15,9 +16,10 @@ The export is read-only. It changes nothing in the place and needs no Play sessi
 | `tools/ui-kit/png.mjs` | Minimal PNG decode/encode used by build.mjs (tints) and receive.mjs (Studio pixels). |
 | `tools/ui-kit/docs.mjs` | Reads the UI map in `docs/client.md` §5 (owner, status, runtime-built guis). |
 | `tools/ui-kit/build.mjs` | Builds the page from `ui.json`: downloads missing images, writes tinted copies, embeds fonts, derives tokens. |
+| `tools/ui-kit/target.html` | Target design boards (HTML fragment, CSS scoped under the target wrapper). build.mjs inlines it as part 1 of the page. Paths are relative to docs/ui-kit/. |
 | `tools/ui-kit/renderer.js`, `page.js` | Browser code that build.mjs inlines into the page (layout renderer and page controls). |
 | `docs/ui-kit/data/ui.json` | Raw export. |
-| `docs/ui-kit/assets/` | `studio/<assetId>.png` exact pixels read in Studio, `<assetId>.png` public thumbnails, `tint/<id>_<hex>.png`, `images.json` (manifest: source, sha256, placeholder flag), `fonts.css` (Roblox fonts as data URIs). |
+| `docs/ui-kit/assets/` | `studio/<assetId>.png` exact pixels read in Studio, `<assetId>.png` public thumbnails, `tint/<id>_<hex>.png`, `images.json` (manifest: source, sha256, placeholder flag), `fonts.css` (Roblox fonts as data URIs), `book-spread.png` (the Book art, studio/118181077777367 cropped, two-column rules removed from the left page). |
 
 ## Steps
 
@@ -36,12 +38,13 @@ The export is read-only. It changes nothing in the place and needs no Play sessi
    ```
    node tools/ui-kit/build.mjs
    ```
+   It also inlines `tools/ui-kit/target.html` as part 1 of the page.
    It prints the counts: ScreenGuis, GuiObjects, colours, fonts, public thumbnails used, placeholders detected,
    images recovered via Studio pixels, images still unavailable (with ids), slice sizes exact or estimated, and
    components found.
 5. Open `docs/ui-kit/index.html`.
 
-To refresh only the page (renderer or layout change, no Studio change), run step 4 alone.
+To refresh only the page (renderer or layout change, or a target.html change, no Studio change), run step 4 alone.
 
 ## Notes
 
@@ -75,25 +78,27 @@ To refresh only the page (renderer or layout change, no Studio change), run step
 - **Components** are listed in `components` in build.mjs by gui key and child path. A path that no longer exists is
   reported as missing in the build summary.
 
-## Target design (v2)
+## Target design
 
-`docs/ui-kit/v2/index.html` is the proposed redesign that follows the UI audit (2026-11-08). It is a target, not an
-export: nothing in it is built in Studio yet, and `build.mjs` does not touch it. The page above stays the record of
-the live place.
+`tools/ui-kit/target.html` is the proposed redesign that follows the UI audit (2026-11-08). It is part 1 of
+`docs/ui-kit/index.html`. It is a target, not an export: nothing in it is built in Studio yet.
 
-- **Source.** A static export of the Claude Design canvas "Woven UI kit", the editable source. Change the canvas
-  first, then re-export, so the two stay in step.
+- **Source.** `tools/ui-kit/target.html`, first exported from the Claude Design canvas "Woven UI kit" and edited here
+  since. This file is now the source; copy canvas changes into it by hand.
 - **Assets.** It reuses the images in `docs/ui-kit/assets` (by asset id) and the fonts in `assets/fonts.css`. The
-  only new file is `v2/book-spread.png`: the Book art (studio/118181077777367) cropped, with the old two-column rules
-  removed from the left page.
+  only new file is `assets/book-spread.png`: the Book art (studio/118181077777367) cropped, with the old two-column
+  rules removed from the left page.
 - **What is real.** Weave recipes and Fireball's numbers (65 mana, range 60, 15 s ready window) come from the docs.
   Bracketed labels such as [Player] or [Form 1] are placeholders; levels, kills, Marks and timers are examples.
 - **Top bar.** The V1 `TopHUD` is kept unchanged: same images (with their tints), layout from the export, BuilderSans
-  and key hints, Quests and Inventory still dimmed. v2 only adds information: live level and XP, a badge for
+  and key hints, Quests and Inventory still dimmed. The target only adds information: live level and XP, a badge for
   unspent skill points on the Book slot, and a line under the bar for time of day and Marks.
 - **Minimap.** Also kept as in V1. `MinimapController` builds it at runtime, so the boards only mark its place with a
   labelled outline; they don't redraw it.
-- **Open choices** it assumes: Air drawn gold (its mobile medallion) rather than cream (the Book), and the composer
-  in the credits.
+- **Credits.** The credits screen (ReplicatedFirst `PlayHUD.Credits`) stays as V1.
+- **Open choices** it assumes: Air drawn gold (its mobile medallion) rather than cream (the Book).
 - **Building toward it.** Tokens go in one `Shared/WovenTheme` module and components in a `Shared/WovenUI` kit
   grown from `ButtonTemplateView`. When a screen is built, re-export the place and rebuild the main page as above.
+- **Live ↔ target.** `TARGET_MAP` in build.mjs marks each live ScreenGui: kept in target, reworked (links to its
+  target section) or no target yet. Add a row when a gui is added. Keys are gui names, or full paths where a name repeats (the two `PlayHUD`s). The build prints how many guis are mapped and fails on a link to a section id that does not exist.
+- **Ids.** Every id in target.html starts with `t-`, and its CSS is scoped under `#target`, so it never clashes with the live part.

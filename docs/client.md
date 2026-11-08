@@ -305,7 +305,7 @@ Other scripts read keys themselves with `UIS.InputBegan` plus `Keybinds.Is`: `To
 
 ## 5. UI map
 
-A rendered version of every ScreenGui below, with its colours, fonts and images, is in [ui-kit/index.html](ui-kit/index.html). The target redesign (not built yet) is in [ui-kit/v2/index.html](ui-kit/v2/index.html): build new or reworked UI toward it.
+A rendered version of every ScreenGui below, with its colours, fonts and images, is in the "Live place" part of [ui-kit/index.html](ui-kit/index.html). The "Target design" part of the same page is what we build toward in game: build new or reworked UI toward it. Each live screen there is marked kept, reworked or no target yet.
 
 | ScreenGui (StarterGui) | Enabled / ResetOnSpawn / DisplayOrder | Owner script | Other writers | Purpose | Status |
 |---|---|---|---|---|---|

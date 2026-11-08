@@ -88,7 +88,7 @@ To refresh only the page (renderer or layout change, or a target.html change, no
 - **Assets.** It reuses the images in `docs/ui-kit/assets` (by asset id) and the fonts in `assets/fonts.css`. The
   only new file is `assets/book-spread.png`: the Book art (studio/118181077777367) cropped, with the old two-column
   rules removed from the left page.
-- **What is real.** Weave recipes and Fireball's numbers (65 mana, range 60, 15 s ready window) come from the docs.
+- **What is real.** Weave recipes and Fireball's numbers (65 mana, range 60, 15 s ready window), and the save-slot product (2 free, max 10), come from the docs.
   Bracketed labels such as [Player] or [Form 1] are placeholders; levels, kills, Marks and timers are examples.
 - **Top bar.** The V1 `TopHUD` is kept unchanged: same images (with their tints), layout from the export, BuilderSans
   and key hints, Quests and Inventory still dimmed. The target only adds information: live level and XP, a badge for
@@ -96,6 +96,7 @@ To refresh only the page (renderer or layout change, or a target.html change, no
 - **Minimap.** Also kept as in V1. `MinimapController` builds it at runtime, so the boards only mark its place with a
   labelled outline; they don't redraw it.
 - **Credits.** The credits screen (ReplicatedFirst `PlayHUD.Credits`) stays as V1.
+- **Extra save slot.** The entry flow shows the buy-slot card and its states: default, price unknown, waiting, adding, late grant, couldn't open, success and at max (no card, "10 of 10 save slots"). It is the live developer product `SaveSlotConfig.ExtraSlotProduct` (49 Robux, 2 free slots, max 10); the price is an example. Built in game, Unlock must be a real button (gamepad and Enter), only one prompt runs at a time with a 30 s wait, and the card always shows owned and max.
 - **Open choices** it assumes: Air drawn gold (its mobile medallion) rather than cream (the Book).
 - **Building toward it.** Tokens go in one `Shared/WovenTheme` module and components in a `Shared/WovenUI` kit
   grown from `ButtonTemplateView`. When a screen is built, re-export the place and rebuild the main page as above.

@@ -1,11 +1,13 @@
 // build.mjs: builds docs/ui-kit/index.html from docs/ui-kit/data/ui.json (the Studio export).
-// Downloads missing images through the public thumbnails API, pre-tints images that use ImageColor3, embeds the
+// Uses Studio pixel reads (assets/studio) where present, downloads the rest through the public thumbnails API
+// (placeholder thumbnails count as failed), pre-tints images that use ImageColor3, embeds the
 // Roblox fonts found in the local Studio install, derives design tokens and inlines renderer.js and page.js.
 // Usage: node tools/ui-kit/build.mjs   (Node 22+, no dependencies)
 import fs from 'node:fs';
 import path from 'node:path';
-import zlib from 'node:zlib';
+import crypto from 'node:crypto';
 import { ROOT, readUiMap } from './docs.mjs';
+import { pngDims, decodePng, encodePng } from './png.mjs';
 
 const KIT_DIR = path.join(ROOT, 'docs', 'ui-kit');
 const ASSETS = path.join(KIT_DIR, 'assets');
@@ -87,7 +89,6 @@ const ids = Object.keys(imgUse);
 
 const manifestFile = path.join(ASSETS, 'images.json');
 const manifest = fs.existsSync(manifestFile) ? JSON.parse(fs.readFileSync(manifestFile, 'utf8')) : {};
-const pngDims = (buf) => (buf.length > 24 && buf.readUInt32BE(0) === 0x89504e47 ? [buf.readUInt32BE(16), buf.readUInt32BE(20)] : null);
 
 async function fetchThumbs(list) {
   const res = {};
@@ -119,120 +120,100 @@ async function fetchThumbs(list) {
   return res;
 }
 
-const missing = ids.filter((id) => !(manifest[id]?.file && fs.existsSync(path.join(KIT_DIR, manifest[id].file))));
-let downloaded = 0;
+// Studio pixel reads (export mode "pixels", saved by receive.mjs) are exact and win over thumbnails. They cover the
+// group's own images, which the public thumbnails API answers with a placeholder.
+const studioFile = (id) => path.join(ASSETS, 'studio', id + '.png');
+const hasStudio = (id) => fs.existsSync(studioFile(id));
+// Roblox's grey "image unavailable" PNG, served with state Completed for images it will not show publicly.
+const PLACEHOLDER_SHA256 = new Set(['ff7e28864063f2717b5712a7ed50b6b653f9cb94d71b209a5286885ffcea9f1e']);
+const sha256 = (buf) => crypto.createHash('sha256').update(buf).digest('hex');
+const thumbOnDisk = (id) => manifest[id]?.file && fs.existsSync(path.join(KIT_DIR, manifest[id].file));
+
+const fresh = new Set();
+const missing = ids.filter((id) => !hasStudio(id) && !thumbOnDisk(id));
 if (missing.length) {
   const thumbs = await fetchThumbs(missing);
   const queue = Object.entries(thumbs);
   async function worker() {
     for (let item = queue.shift(); item; item = queue.shift()) {
       const [id, t] = item;
-      if (t.error) { manifest[id] = { error: t.error }; continue; }
+      if (t.error) { manifest[id] = { ...manifest[id], file: undefined, error: t.error }; continue; }
       try {
         const r = await fetch(t.url, { headers: UA });
         const buf = Buffer.from(await r.arrayBuffer());
         const dims = r.ok && pngDims(buf);
-        if (!dims) { manifest[id] = { error: `bad image (HTTP ${r.status})` }; continue; }
+        if (!dims) { manifest[id] = { ...manifest[id], file: undefined, error: `bad image (HTTP ${r.status})` }; continue; }
         fs.writeFileSync(path.join(ASSETS, id + '.png'), buf);
-        manifest[id] = { file: `assets/${id}.png`, w: dims[0], h: dims[1], source: 'thumbnails.roblox.com ' + THUMB_SIZE };
-        downloaded++;
-      } catch (e) { manifest[id] = { error: String(e.message || e) }; }
+        manifest[id] = { ...manifest[id], file: `assets/${id}.png`, w: dims[0], h: dims[1], sha256: sha256(buf), error: undefined, source: 'thumbnails.roblox.com ' + THUMB_SIZE };
+        fresh.add(id);
+      } catch (e) { manifest[id] = { ...manifest[id], file: undefined, error: String(e.message || e) }; }
     }
   }
   await Promise.all(Array.from({ length: 6 }, worker));
-  fs.writeFileSync(manifestFile, JSON.stringify(manifest, null, 1));
 }
-const failed = ids.filter((id) => !manifest[id]?.file);
+// A thumbnail is a placeholder when it matches the known placeholder or is byte-identical to another id's file.
+const byHash = {};
+for (const id of ids) {
+  if (!thumbOnDisk(id)) continue;
+  manifest[id].sha256 ??= sha256(fs.readFileSync(path.join(KIT_DIR, manifest[id].file)));
+  (byHash[manifest[id].sha256] ??= []).push(id);
+}
+const placeholderNow = [];
+for (const [hash, list] of Object.entries(byHash)) {
+  if (!PLACEHOLDER_SHA256.has(hash) && list.length < 2) continue;
+  for (const id of list) {
+    fs.rmSync(path.join(KIT_DIR, manifest[id].file));
+    manifest[id] = { placeholder: true, error: `placeholder thumbnail (sha256 ${hash.slice(0, 12)}…)` };
+    placeholderNow.push(id);
+    fresh.delete(id);
+  }
+}
+for (const id of ids) if (hasStudio(id)) manifest[id] = { ...manifest[id], studio: `assets/studio/${id}.png` };
+fs.writeFileSync(manifestFile, JSON.stringify(manifest, null, 1));
 
-// Native size: exact from Studio (EditableImage) when it could load the asset, else estimated from the
+// Native size: exact for Studio pixels or when Studio reported the size (EditableImage); else estimated from the
 // thumbnail aspect: the smallest common upload size whose pixels contain every slice/rect coordinate used.
 const kitImages = {};
 let exactCrops = 0, approxCrops = 0;
 for (const id of ids) {
-  const m = manifest[id];
-  if (!m?.file) continue;
-  const s = ui.imageSizes?.[id];
+  const m = manifest[id] || {};
   const u = imgUse[id];
-  let nw = m.w, nh = m.h, exact = false, how = 'thumbnail size';
-  if (Array.isArray(s)) { [nw, nh] = s; exact = true; how = 'Studio (exact)'; }
+  let file, w, h, source;
+  if (hasStudio(id)) {
+    [w, h] = pngDims(fs.readFileSync(studioFile(id)));
+    file = `assets/studio/${id}.png`; source = 'Studio EditableImage';
+  } else if (thumbOnDisk(id)) { file = m.file; w = m.w; h = m.h; source = 'public thumbnail'; }
+  else continue;
+  const s = ui.imageSizes?.[id];
+  let nw = w, nh = h, exact = false, how = 'thumbnail size';
+  if (source === 'Studio EditableImage') { exact = true; how = 'Studio pixels (exact)'; }
+  else if (Array.isArray(s)) { [nw, nh] = s; exact = true; how = 'Studio size (exact)'; }
   else if (u.needX || u.needY) {
-    const aspect = m.w / m.h;
+    const aspect = w / h;
     for (const long of [128, 256, 512, 1024]) {
-      const w = aspect >= 1 ? long : Math.round(long * aspect), h = aspect >= 1 ? Math.round(long / aspect) : long;
-      nw = w; nh = h;
-      if (w >= u.needX && h >= u.needY) break;
+      const ew = aspect >= 1 ? long : Math.round(long * aspect), eh = aspect >= 1 ? Math.round(long / aspect) : long;
+      nw = ew; nh = eh;
+      if (ew >= u.needX && eh >= u.needY) break;
     }
     how = 'estimated from aspect';
   }
   if (u.slices.size || u.rects) { if (exact) exactCrops++; else approxCrops++; }
-  kitImages[id] = { file: m.file, w: m.w, h: m.h, nw, nh, exact, how };
+  kitImages[id] = { file, w, h, nw, nh, exact, how, source };
 }
+const unavailable = ids.filter((id) => !kitImages[id]);
+const fromStudio = ids.filter(hasStudio);
+const knownPlaceholders = ids.filter((id) => manifest[id]?.placeholder);
 
-// ---------- PNG decode/encode (8-bit, non-interlaced) for tinting ----------
-function decodePng(buf) {
-  if (!pngDims(buf)) return null;
-  let off = 8, w, h, depth, ctype, interlace, pal = null, trns = null;
-  const idat = [];
-  while (off < buf.length) {
-    const len = buf.readUInt32BE(off), type = buf.toString('ascii', off + 4, off + 8), data = buf.subarray(off + 8, off + 8 + len);
-    if (type === 'IHDR') { w = data.readUInt32BE(0); h = data.readUInt32BE(4); depth = data[8]; ctype = data[9]; interlace = data[12]; }
-    else if (type === 'PLTE') pal = data;
-    else if (type === 'tRNS') trns = data;
-    else if (type === 'IDAT') idat.push(data);
-    else if (type === 'IEND') break;
-    off += 12 + len;
-  }
-  const ch = { 0: 1, 2: 3, 3: 1, 4: 2, 6: 4 }[ctype];
-  if (depth !== 8 || interlace || !ch) return null;
-  const raw = zlib.inflateSync(Buffer.concat(idat));
-  const stride = w * ch, out = Buffer.alloc(w * h * 4), line = Buffer.alloc(stride), prev = Buffer.alloc(stride);
-  for (let y = 0; y < h; y++) {
-    const f = raw[y * (stride + 1)], src = raw.subarray(y * (stride + 1) + 1, (y + 1) * (stride + 1));
-    for (let i = 0; i < stride; i++) {
-      const a = i >= ch ? line[i - ch] : 0, b = prev[i], c = i >= ch ? prev[i - ch] : 0;
-      let v = src[i];
-      if (f === 1) v += a; else if (f === 2) v += b; else if (f === 3) v += (a + b) >> 1;
-      else if (f === 4) { const p = a + b - c, pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c); v += pa <= pb && pa <= pc ? a : pb <= pc ? b : c; }
-      line[i] = v & 255;
-    }
-    for (let x = 0; x < w; x++) {
-      const o = (y * w + x) * 4, s = x * ch;
-      if (ctype === 6) line.copy(out, o, s, s + 4);
-      else if (ctype === 2) { out[o] = line[s]; out[o + 1] = line[s + 1]; out[o + 2] = line[s + 2]; out[o + 3] = 255; }
-      else if (ctype === 0) { out[o] = out[o + 1] = out[o + 2] = line[s]; out[o + 3] = 255; }
-      else if (ctype === 4) { out[o] = out[o + 1] = out[o + 2] = line[s]; out[o + 3] = line[s + 1]; }
-      else { const i = line[s]; out[o] = pal[i * 3]; out[o + 1] = pal[i * 3 + 1]; out[o + 2] = pal[i * 3 + 2]; out[o + 3] = trns && i < trns.length ? trns[i] : 255; }
-    }
-    line.copy(prev);
-  }
-  return { w, h, rgba: out };
-}
-function encodePng(w, h, rgba) {
-  const raw = Buffer.alloc((w * 4 + 1) * h);
-  for (let y = 0; y < h; y++) rgba.copy(raw, y * (w * 4 + 1) + 1, y * w * 4, (y + 1) * w * 4);
-  const chunk = (type, data) => {
-    const len = Buffer.alloc(4); len.writeUInt32BE(data.length);
-    const td = Buffer.concat([Buffer.from(type, 'ascii'), data]);
-    const crc = Buffer.alloc(4); crc.writeUInt32BE(zlib.crc32(td) >>> 0);
-    return Buffer.concat([len, td, crc]);
-  };
-  const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4); ihdr[8] = 8; ihdr[9] = 6;
-  return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ihdr), chunk('IDAT', zlib.deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]);
-}
-{ // self-check: a 2x1 image survives encode/decode.
-  const px = Buffer.from([255, 0, 0, 255, 0, 128, 255, 64]);
-  const back = decodePng(encodePng(2, 1, px));
-  if (!back || !back.rgba.equals(px)) throw new Error('PNG codec self-check failed');
-}
 const tints = {};
 let tintFailed = 0;
 const tintKeys = new Set(guiObjects.filter((e) => idOf(e.node.props.Image) && e.node.props.ImageColor3 && e.node.props.ImageColor3 !== '#ffffff').map((e) => idOf(e.node.props.Image) + '_' + e.node.props.ImageColor3.slice(1)));
 for (const key of tintKeys) {
   const [id, hex] = key.split('_');
   const out = path.join(ASSETS, 'tint', key + '.png');
-  if (!kitImages[id]) { tintFailed++; continue; }
-  if (!fs.existsSync(out)) {
-    const img = decodePng(fs.readFileSync(path.join(KIT_DIR, kitImages[id].file)));
+  if (!kitImages[id]) { fs.rmSync(out, { force: true }); tintFailed++; continue; }
+  const base = path.join(KIT_DIR, kitImages[id].file);
+  if (!fs.existsSync(out) || fs.statSync(out).mtimeMs < fs.statSync(base).mtimeMs) {
+    const img = decodePng(fs.readFileSync(base));
     if (!img) { tintFailed++; continue; }
     const t = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16));
     for (let i = 0; i < img.rgba.length; i += 4) for (let c = 0; c < 3; c++) img.rgba[i + c] = Math.round((img.rgba[i + c] * t[c]) / 255);
@@ -444,7 +425,7 @@ const transpRows = Object.entries(transp).sort().map(([k, t]) => { const [role, 
 const imageCards = ids.sort((a, b) => imgUse[b].count - imgUse[a].count).map((id) => {
   const u = imgUse[id], k = kitImages[id], m = manifest[id];
   const st = Object.entries(u.scaleTypes).map(([s, c]) => `${s} ${c}`).join(', ') || 'code only';
-  return `<figure class="img-card"><div class="thumb">${k ? `<img loading="lazy" src="${esc(k.file)}" alt="">` : `<span class="fail">not downloaded<br>${esc(m?.error || '')}</span>`}</div><figcaption><b>${esc(id)}</b> · ${u.count} use${u.count === 1 ? '' : 's'}${u.code ? ' + code' : ''}<br>${esc(st)}${u.slices.size ? `<br>slice ${[...u.slices].map(esc).join('; ')}` : ''}${u.rects ? `<br>rect crops ${u.rects}` : ''}${k ? `<br>file ${k.w}×${k.h} · native ${k.nw}×${k.nh} (${esc(k.how)})` : ''}<div class="paths">${pathList(u.paths)}</div></figcaption></figure>`;
+  return `<figure class="img-card"><div class="thumb">${k ? `<img loading="lazy" src="${esc(k.file)}" alt="">` : `<span class="fail">image unavailable<br>${esc(m?.error || '')}</span>`}</div><figcaption><b>${esc(id)}</b> · ${u.count} use${u.count === 1 ? '' : 's'}${u.code ? ' + code' : ''}<br>${esc(st)}${u.slices.size ? `<br>slice ${[...u.slices].map(esc).join('; ')}` : ''}${u.rects ? `<br>rect crops ${u.rects}` : ''}${k ? `<br>${esc(k.source)} ${k.w}×${k.h} · native ${k.nw}×${k.nh} (${esc(k.how)})` : ''}${m?.placeholder ? '<br>public thumbnail is the placeholder' : ''}<div class="paths">${pathList(u.paths)}</div></figcaption></figure>`;
 }).join('');
 const codeTokens = Object.entries(code).map(([name, m]) => {
   const lines = m.source.split('\n').map((l, i) => [i + 1, l]).filter(([, l]) => /Color3\.|rbxassetid|Font\.|Rect\.new|Transparency =|Size =|Spacing =|SliceScale/.test(l));
@@ -468,8 +449,9 @@ const runtimeRows = uiMap.runtime.map((r) => {
 }).join('');
 const toc = [['header', 'About'], ['foundations', 'Foundations'], ['components', 'Components'], ['screens', 'Screens'], ['runtime', 'Runtime-built UI'], ['approx', 'Approximations']];
 const staticApprox = [
-  failed.length ? `${failed.length} image(s) could not be downloaded and draw as hatched boxes: ${failed.join(', ')}.` : 'Every referenced image was downloaded.',
-  `Images are public thumbnails (${THUMB_SIZE} box, aspect kept), not the original files, so they can be softer than in game.`,
+  unavailable.length ? `${unavailable.length} image(s) are unavailable and draw as labelled boxes: ${unavailable.join(', ')}.` : 'Every referenced image is available.',
+  `${fromStudio.length} image(s) are exact pixels read in Studio (EditableImage), because the public thumbnail is Roblox's "image unavailable" placeholder: ${fromStudio.join(', ') || 'none'}.`,
+  `The other images are public thumbnails (${THUMB_SIZE} box, aspect kept), not the original files, so they can be softer than in game.`,
   `${approxCrops} sliced/cropped image(s) use a native size estimated from the thumbnail aspect (Studio could not open them with EditableImage); ${exactCrops} use the exact size from Studio.`,
   `Fonts: ${fontReport.map((f) => `${f.name} → ${f.embedded.length ? 'Roblox file ' + f.embedded.join(', ') : f.web ? 'web/system ' + f.web : 'generic fallback'}`).join('; ')}.`,
   'Text: Roblox TextSize is drawn as CSS font-size with line-height = TextSize × LineHeight; TextScaled is fitted with canvas text metrics.',
@@ -521,7 +503,7 @@ main{max-width:1240px;margin:0 auto;padding:20px}section{margin:0 0 48px}h2{bord
 .rn-root{position:absolute;left:0}
 .rn{position:absolute;box-sizing:border-box}.rn-folder{pointer-events:none}.rn-folder>.rn{pointer-events:auto}
 .rn-img{position:absolute;inset:0;border-radius:inherit;box-sizing:border-box;pointer-events:none}
-.rn-missing{background:repeating-linear-gradient(45deg,rgba(224,122,106,.35) 0 6px,transparent 6px 12px);outline:1px dashed #e07a6a}
+.rn-missing{display:flex;align-items:center;justify-content:center;text-align:center;background:rgba(40,40,46,.85);outline:1px dashed #e07a6a;outline-offset:-1px;color:#f0c8bf;font:12px/1.2 system-ui;overflow:hidden}
 .rn-text{position:absolute;inset:0;display:flex;flex-direction:column;overflow:visible;pointer-events:none;word-break:break-word}
 .rn-text span{display:block;max-width:100%}
 .rn-viewport{background-image:repeating-linear-gradient(-45deg,rgba(255,255,255,.08) 0 4px,transparent 4px 10px)}
@@ -536,7 +518,8 @@ main{max-width:1240px;margin:0 auto;padding:20px}section{margin:0 0 48px}h2{bord
 <main>
 <section id="header"><h1>Woven UI kit</h1>
 <p>The authored UI of <b>${esc(ui.placeName)}</b> (PlaceId ${esc(ui.placeId)}, GameId ${esc(ui.gameId)}, place version ${esc(ui.placeVersion)}), rendered from a read-only export of Roblox Studio. It shows every ScreenGui in StarterGui and the ReplicatedFirst PlayHUD and SaveSlotHUD as they are authored, before any script changes them.</p>
-<p class="small muted">Exported ${esc(ui.exportedAt)} · page built ${now} · ${ui.guis.length} ScreenGuis · ${guiObjects.length} GuiObjects · ${Object.keys(colors).length} colours · ${Object.keys(type).length} type styles · ${ids.length} images.<br>
+<p class="small muted">Exported ${esc(ui.exportedAt)} · page built ${now} · ${ui.guis.length} ScreenGuis · ${guiObjects.length} GuiObjects · ${Object.keys(colors).length} colours · ${Object.keys(type).length} type styles · ${ids.length} images (${fromStudio.length} read in Studio).<br>
+${unavailable.length ? `<b class="fail">Images unavailable (${unavailable.length}):</b> ${unavailable.map((id) => `<code>${esc(id)}</code>`).join(', ')}. They draw as labelled boxes.<br>` : ''}
 Rebuild: see <a href="../../tools/ui-kit/README.md">tools/ui-kit/README.md</a> (export through the roblox-studio MCP, then <code>node tools/ui-kit/build.mjs</code>). Hover any element in a component or screen to see its path and size.</p></section>
 
 <section id="foundations"><h2>Foundations</h2>
@@ -575,7 +558,9 @@ console.log([
   `ScreenGuis exported: ${ui.guis.length}`,
   `GuiObjects exported: ${guiObjects.length}`,
   `Distinct colours: ${Object.keys(colors).length} · type styles: ${Object.keys(type).length} (families: ${fontReport.map((f) => f.name).join(', ')}) · images: ${ids.length}`,
-  `Images: ${downloaded} downloaded this run, ${ids.length - failed.length} on disk, ${failed.length} failed${failed.length ? ' (' + failed.map((id) => `${id}: ${manifest[id]?.error}`).join('; ') + ')' : ''}`,
+  `Images: ${ids.length} referenced · public thumbnails used ${Object.values(kitImages).filter((k) => k.source === 'public thumbnail').length} (${fresh.size} downloaded this run) · placeholder-detected this run ${placeholderNow.length}${placeholderNow.length ? ' (' + placeholderNow.join(', ') + ')' : ''} · known placeholder ids ${knownPlaceholders.length}`,
+  `Images recovered via Studio pixels (EditableImage): ${fromStudio.length}${fromStudio.length ? ' (' + fromStudio.join(', ') + ')' : ''}`,
+  `Images still unavailable: ${unavailable.length}${unavailable.length ? ' (' + unavailable.map((id) => `${id}: ${manifest[id]?.error}`).join('; ') + ')' : ''}`,
   `Tinted variants: ${Object.keys(tints).length} written/kept, ${tintFailed} failed`,
   `Slice/rect images: ${exactCrops} exact native size, ${approxCrops} estimated`,
   `Fonts: ${fontReport.map((f) => `${f.name}=${f.embedded.length ? 'embedded ' + f.embedded.length : f.web || 'generic'}`).join(', ')}${fontsDir ? '' : ' (Studio fonts dir not found)'}`,

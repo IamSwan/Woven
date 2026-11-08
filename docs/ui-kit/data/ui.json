@@ -14,7 +14,7 @@
  },
  "placeId": 103140548975456,
  "roots": 23,
- "exportedAt": "2026-11-08T17:05:36Z",
+ "exportedAt": "2026-11-08T17:25:29Z",
  "imageSizes": {
   "91607195281707": {
    "error": "AssetService::CreateEditableImageAsync failed because no permission to load asset"

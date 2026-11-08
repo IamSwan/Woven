@@ -1,422 +1,480 @@
 {
  "98813408669323": {
-  "file": "assets/98813408669323.png",
-  "w": 700,
-  "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "placeholder": true,
+  "error": "placeholder thumbnail (sha256 ff7e28864063…)",
+  "studio": "assets/studio/98813408669323.png"
  },
  "140019374685517": {
-  "file": "assets/140019374685517.png",
-  "w": 700,
-  "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "placeholder": true,
+  "error": "placeholder thumbnail (sha256 ff7e28864063…)",
+  "studio": "assets/studio/140019374685517.png"
  },
  "74212157185486": {
-  "file": "assets/74212157185486.png",
-  "w": 700,
-  "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "placeholder": true,
+  "error": "placeholder thumbnail (sha256 ff7e28864063…)",
+  "studio": "assets/studio/74212157185486.png"
  },
  "91607195281707": {
   "file": "assets/91607195281707.png",
   "w": 700,
   "h": 95,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "4778d8ce6250c47e5a9f3e6eee2dd21aebc84944c7897a999fe10b63cc5b27df"
  },
  "118181077777367": {
-  "file": "assets/118181077777367.png",
-  "w": 700,
-  "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "placeholder": true,
+  "error": "placeholder thumbnail (sha256 ff7e28864063…)",
+  "studio": "assets/studio/118181077777367.png"
  },
  "91527489803627": {
-  "file": "assets/91527489803627.png",
-  "w": 700,
-  "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "placeholder": true,
+  "error": "placeholder thumbnail (sha256 ff7e28864063…)",
+  "studio": "assets/studio/91527489803627.png"
  },
  "82402215340505": {
   "file": "assets/82402215340505.png",
   "w": 700,
   "h": 92,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "6c518f16effc63eb6c23cef9857eae757ffe998c9ea5737f492050d2079d494b"
  },
  "130853374692501": {
   "file": "assets/130853374692501.png",
   "w": 700,
   "h": 93,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "63e18bd77180c69eaaca0097eed9bd065123886e2073d5d062311d89588c22c0"
  },
  "91456867744029": {
-  "file": "assets/91456867744029.png",
-  "w": 700,
-  "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "placeholder": true,
+  "error": "placeholder thumbnail (sha256 ff7e28864063…)",
+  "studio": "assets/studio/91456867744029.png"
  },
  "109656000204913": {
   "file": "assets/109656000204913.png",
   "w": 700,
   "h": 140,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "c31546fa5fb6ba3798cdf79bad0ff854ff8f81711c761930181313920040559f"
  },
  "89310180439736": {
   "file": "assets/89310180439736.png",
   "w": 700,
   "h": 213,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "378c925a0d41073d65591dd3a95968a702ec99d6f9e00d6328b09e4b73890b4c"
  },
  "75565195062942": {
   "file": "assets/75565195062942.png",
   "w": 700,
   "h": 93,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "bd271d33fac1ce44e472d4ec75466029d98b788ebc8f689a18b4b605b023461e"
  },
  "85002536692301": {
   "file": "assets/85002536692301.png",
   "w": 622,
   "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "71443a86c6f53b5a655df812f34340c81d5b34ff8152efd77fe687e7b5dc018a"
  },
  "97760911897294": {
   "file": "assets/97760911897294.png",
   "w": 700,
   "h": 202,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "40e86f43a653e958682450e431e5139cbacfca0d8030485508afa8bdf54cc58a"
  },
  "78722333812585": {
   "file": "assets/78722333812585.png",
   "w": 700,
   "h": 206,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "086727004f9b94da40d32a4196466205bb10351b62de335021a77e111aeb3796"
  },
  "71221942296508": {
   "file": "assets/71221942296508.png",
   "w": 700,
   "h": 183,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "eee68ad1463c4b845cac0c4ca248654ab2be8f5ed04b6c700601bb04bad33560"
  },
  "104633791362041": {
   "file": "assets/104633791362041.png",
   "w": 700,
   "h": 88,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "0c00bb91f3acd92ab4a125d8e15cdac33ea6e920445bcf78a6c5cd7824d45e81"
  },
  "103800131387866": {
   "file": "assets/103800131387866.png",
   "w": 700,
   "h": 94,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "46a3bda0bde4df83cd92b736567945ab36ab42a35839312731bbf68842a173df"
  },
  "94760047129048": {
   "file": "assets/94760047129048.png",
   "w": 700,
   "h": 142,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "e339e12170d97abcb6a0cc51978ca42ad0d58b5f82a93fedcdc58c5ff3cabf2e"
  },
  "76582718292955": {
   "file": "assets/76582718292955.png",
   "w": 700,
   "h": 130,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "b474e5376a3f79860a4145add40b62a5da0b7e6a30d4c5a396d0bb13a10edf5d"
  },
  "110415354567374": {
   "file": "assets/110415354567374.png",
   "w": 700,
   "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "2b4d1fef33dbe8565c3e8eaf2cba0a752556876c39e5c59ebc7de96f61dd498d"
  },
  "111850489394175": {
   "file": "assets/111850489394175.png",
   "w": 700,
   "h": 394,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "09c6c7da368db6372759b439dbeea6fa48b9aa359f8efbda373f946ec9f7dfdf"
  },
  "94462480513678": {
   "file": "assets/94462480513678.png",
   "w": 700,
   "h": 315,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "43455ffa7e26c311779dcea9b1a835bf5a5839f0ff3e636c2c47d83e0d56e787"
  },
  "131123073609732": {
   "file": "assets/131123073609732.png",
   "w": 700,
   "h": 669,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "97051c971172c116c51a80ef6c3f3e87594c91cf0d920faac2a54e95e981d4c9"
  },
  "121828314559401": {
   "file": "assets/121828314559401.png",
   "w": 700,
   "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "961eb73645c4edf45bd885c906c9b781dea08f0ac8cf04f9cbef4bd825b25e10"
  },
  "129789844162743": {
   "file": "assets/129789844162743.png",
   "w": 700,
   "h": 94,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "5cd7bc8bf2b033a6f04ede60e1477f48a3b804288c14789867311936adad4acf"
  },
  "94978925470125": {
   "file": "assets/94978925470125.png",
   "w": 700,
   "h": 92,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "bff20edff97e6965c870164df47b30ddd7a7ca7e9004e9df87e3c1336ba75567"
  },
  "117877444691178": {
   "file": "assets/117877444691178.png",
   "w": 700,
   "h": 144,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "76ad7455558158e2a5217bc347f9751a7bcfe1793645393f6d9351727acba3c2"
  },
  "102526473700189": {
   "file": "assets/102526473700189.png",
   "w": 700,
   "h": 142,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "df1bf74e5f7901a39e5e6ba092a35eb0696ab9bd49aed193bb5aca909b74225b"
  },
  "137381899011035": {
   "file": "assets/137381899011035.png",
   "w": 700,
   "h": 147,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "66a29e52f288acd46db21c9e0ad77840320e7f55ef37f53f3169199a334a94da"
  },
  "93294148929489": {
   "file": "assets/93294148929489.png",
   "w": 700,
   "h": 46,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "328d23127dec77346c59bf69bf68c3c75a45be4fbec9ffcede7c01d5c2f4e243"
  },
  "135898959651897": {
   "file": "assets/135898959651897.png",
   "w": 700,
   "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "f7f176d7167bbf949684217195cb8a9e60d6f9677b649177887f6ff7e841fce3"
  },
  "139179561160146": {
   "file": "assets/139179561160146.png",
   "w": 700,
   "h": 690,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "99d79100a291fe3ffda162fc22c006fe79d7a560cd76e324fb405f9ade51a776"
  },
  "135928312351168": {
   "file": "assets/135928312351168.png",
   "w": 700,
   "h": 241,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "db8f1dbc12ed7dfd033b8bbcdb11a02e54b1f4bd41a1ed64e835c2658350e965"
  },
  "132886882322222": {
   "file": "assets/132886882322222.png",
   "w": 700,
   "h": 95,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "dc5bbc7437fb5f59dd5741c150e7c920193dd2aab510e06e1579dc2f11239b7a"
  },
  "120619128282445": {
   "file": "assets/120619128282445.png",
   "w": 700,
   "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "92117e21bab3a0930e08fd1bbc3d7deec38d15908668fdf40d5a212349465222"
  },
  "89441624587937": {
   "file": "assets/89441624587937.png",
   "w": 657,
   "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "12aee2ceac5a916d65cdd9f1213aca0139cdfca6ecbf726bd6a4d65057594abe"
  },
  "74286399519444": {
   "file": "assets/74286399519444.png",
   "w": 700,
   "h": 143,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "feb38392a5c634b16226a5a329af930ae50a355bd223e3c7b705a1479e51e04c"
  },
  "93749427934937": {
   "file": "assets/93749427934937.png",
   "w": 700,
   "h": 467,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "1d0beef0e9e6a036b3c9582a8624e8323db7027d32b29a89edf6eb37c916a354"
  },
  "133537627112682": {
   "file": "assets/133537627112682.png",
   "w": 700,
   "h": 38,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "226dd995bcbe4fe0d974b9c212ae2cafb40fd536c16eec74ff68b087d5d589a9"
  },
  "110058497240611": {
   "file": "assets/110058497240611.png",
   "w": 639,
   "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "fa0b035a36196b9547a266ff068fa342ee5fcce227ece85dd2b0edb994f5ea37"
  },
  "72351323793185": {
   "file": "assets/72351323793185.png",
   "w": 700,
   "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "a0e862d339287f17ef47b4c6b6343703deba73fa0b0d4145a0c55143c2b1f015"
  },
  "80391937209124": {
   "file": "assets/80391937209124.png",
   "w": 700,
   "h": 394,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "6786be2d00988e4917b0c689b242a65e5fcc8aa8468e4fc4bf8093cf27944f08"
  },
  "89506616127386": {
   "file": "assets/89506616127386.png",
   "w": 700,
   "h": 697,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "a6ff0c0ee071f6c115b8d1e0677bfaf0bebd7d781221bcd011f7c5c02eef42db"
  },
  "101538507417481": {
   "file": "assets/101538507417481.png",
   "w": 700,
   "h": 288,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "4191d015415e3db9738f19cffda63a437e8fa9697765ef6915ca81ef9fa22ed5"
  },
  "115996659422842": {
   "file": "assets/115996659422842.png",
   "w": 659,
   "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "17439a684d117204bcf0000eb9d1e2a91b6fe477985befbeba0f1c4bdee79885"
  },
  "84771494931363": {
   "file": "assets/84771494931363.png",
   "w": 700,
   "h": 94,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "2e433c6fe24d69882f796077b575e065814abed4ab1380486fc4a140cc527862"
  },
  "78213270777077": {
   "file": "assets/78213270777077.png",
   "w": 700,
   "h": 680,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "f9805cab06adfefdd010970c904b7ed36147b7b21bd34a606dd933f2b285e609"
  },
  "73762725191208": {
   "file": "assets/73762725191208.png",
   "w": 271,
   "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "215ad26838e0412d210fc8a3f5e17b98c9332546bb68ff85c1e153f5b4e59adf"
  },
  "91527845681015": {
   "file": "assets/91527845681015.png",
   "w": 700,
   "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "c68962428aff693051be314127b48356ca065eafe9f95f85dfa9c588b769058d"
  },
  "124837351630851": {
   "file": "assets/124837351630851.png",
   "w": 700,
   "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "6a66e45f60e61ca49475f74c7aae9311572ee8764a29ab411202790aedab7c96"
  },
  "74534951371925": {
   "file": "assets/74534951371925.png",
   "w": 700,
   "h": 276,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "dd2e56e05bb0787c65c8c3c029079f9b173b05ad6502820dbcf9a9e6a3d8e518"
  },
  "108494879019670": {
   "file": "assets/108494879019670.png",
   "w": 700,
   "h": 396,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "5dee5f5e23991711cc273e47d07423519e95f06678452343643e40e3fd648a95"
  },
  "92466313057290": {
   "file": "assets/92466313057290.png",
   "w": 700,
   "h": 350,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "cbbc8c4b164417a8a6756d1f1def1dda43054b28e359561e38d420dcd5cc82b2"
  },
  "107612454225985": {
   "file": "assets/107612454225985.png",
   "w": 700,
   "h": 130,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "fe070407849d82b30ed7fd63239c3f1def0cdd421d62ad681e9d7bf47e37c271"
  },
  "108147164698391": {
   "file": "assets/108147164698391.png",
   "w": 388,
   "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "9b36be3b9b87d310436ce8c2be8f209df906ab7dc887cdbac3f2573858dd4384"
  },
  "89765347959236": {
   "file": "assets/89765347959236.png",
   "w": 652,
   "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "103a903ceebd535f22893d4cef06a8c9a54d9f70ba4085022d2704b3bce41826"
  },
  "104705151879320": {
   "file": "assets/104705151879320.png",
   "w": 700,
   "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "1c6b636208fcde76fe0a01f63dae60fc70f3fee1c409c024bee0198bf18aa85e"
  },
  "130601719554963": {
   "file": "assets/130601719554963.png",
   "w": 700,
   "h": 92,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "4dc34eab29ecffef382d4e4dd8ca6d762cbe44b9e27b2c8606b4c47cec6dfbce"
  },
  "111573642740869": {
   "file": "assets/111573642740869.png",
   "w": 700,
   "h": 128,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "72ee9f844cc5da5980ff1c92d7351d8fc4af0426e8e8c35fb9e093bbb4977149"
  },
  "87964263939890": {
   "file": "assets/87964263939890.png",
   "w": 700,
   "h": 134,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "bc48fb061a45f618aa74ce0e809c52cac6f57e478b35e8559ac841509ad84224"
  },
  "110697824868449": {
   "file": "assets/110697824868449.png",
   "w": 700,
   "h": 131,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "a66792679a7cea831fef2a1a8e687e45d752d2ac77700d2787f1187f2ad116ec"
  },
  "135880139331817": {
   "file": "assets/135880139331817.png",
   "w": 700,
   "h": 147,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "3cbe046d00474114e26ce3bd3d9d7687cde4533440bbb2ffb60b750f7001fe7a"
  },
  "102286861571246": {
   "file": "assets/102286861571246.png",
   "w": 700,
   "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "07c4d4c5da858db9401b466f6b20b6d93612052d4a24e836af688b56f30d1ec2"
  },
  "79119272392879": {
   "file": "assets/79119272392879.png",
   "w": 700,
   "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "cc8a7ddf504d3e10e315e8518c2f6fb4fb015c4cd4db9e3dcc1efcdd69f7b848"
  },
  "97163414391034": {
   "file": "assets/97163414391034.png",
   "w": 514,
   "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "de4b7e3e38dbee59adce11a52aee01e3042fabc6ebd521247ddbd341a3f482fd"
  },
  "84322003469814": {
   "file": "assets/84322003469814.png",
   "w": 700,
   "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "55fe810c66222210a8bb8a528c24bbabb8fc05147789ee493878e8955bb2654a"
  },
  "121050680426343": {
   "file": "assets/121050680426343.png",
   "w": 700,
   "h": 680,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "917999f388b92c9fdce92b5909038cd6aea1b0ae012ff4944d2298a8bb1e205b"
  },
  "122933148551698": {
   "file": "assets/122933148551698.png",
   "w": 700,
   "h": 700,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "3f2b505562245a697f34c3e6431403e97bc57cc313da4b9cd4d6bace4e270067"
  },
  "99735273479706": {
   "file": "assets/99735273479706.png",
   "w": 700,
   "h": 500,
-  "source": "thumbnails.roblox.com 700x700"
+  "source": "thumbnails.roblox.com 700x700",
+  "sha256": "b8d9af9bc3466177436f45519dc85ec429c2ae7c70ffbee78fcc5ab186ea543f"
  }
 }

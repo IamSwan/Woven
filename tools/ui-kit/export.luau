@@ -3,11 +3,14 @@
 -- Set ONLY to one ScreenGui name ("StarterGui/MainHUD" style key) to export a single gui; nil lists the keys.
 -- MODE: "list" returns the gui keys, "gui" exports ONLY, "meta" returns place info and code-token module sources,
 -- "sizes" returns native pixel sizes for IDS (EditableImage; read-only, nothing is parented),
--- "runtime" returns the client scripts that name each runtime-built gui in NAMES.
+-- "runtime" returns the client scripts that name each runtime-built gui in NAMES,
+-- "pixels" returns ROWS rows of IDS[1] from ROW0 as base64 RGBA8 (EditableImage; read-only, nothing is parented).
 local MODE = "list"
 local ONLY = nil
 local IDS = {}
 local NAMES = {}
+local ROW0 = 0
+local ROWS = 128
 
 local HttpService = game:GetService("HttpService")
 
@@ -155,6 +158,36 @@ elseif MODE == "sizes" then
 		end
 	end
 	return HttpService:JSONEncode(out)
+elseif MODE == "pixels" then
+	local A = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+	local function base64(buf)
+		local n = buffer.len(buf)
+		local out = buffer.create(math.ceil(n / 3) * 4)
+		local o = 0
+		for i = 0, n - 1, 3 do
+			local b1 = if i + 1 < n then buffer.readu8(buf, i + 1) else 0
+			local b2 = if i + 2 < n then buffer.readu8(buf, i + 2) else 0
+			local v = buffer.readu8(buf, i) * 65536 + b1 * 256 + b2
+			buffer.writeu8(out, o, string.byte(A, bit32.rshift(v, 18) + 1))
+			buffer.writeu8(out, o + 1, string.byte(A, bit32.band(bit32.rshift(v, 12), 63) + 1))
+			buffer.writeu8(out, o + 2, if i + 1 < n then string.byte(A, bit32.band(bit32.rshift(v, 6), 63) + 1) else 61)
+			buffer.writeu8(out, o + 3, if i + 2 < n then string.byte(A, bit32.band(v, 63) + 1) else 61)
+			o += 4
+		end
+		return buffer.tostring(out)
+	end
+	local id = IDS[1]
+	local ok, img = pcall(function()
+		return game:GetService("AssetService"):CreateEditableImageAsync(Content.fromUri("rbxassetid://" .. id))
+	end)
+	if not ok or not img then return HttpService:JSONEncode({ id = id, error = tostring(img) }) end
+	local w, h = img.Size.X, img.Size.Y
+	local y0 = math.min(ROW0, h)
+	local rows = math.min(ROWS, h - y0)
+	local data = ""
+	if rows > 0 then data = base64(img:ReadPixelsBuffer(Vector2.new(0, y0), Vector2.new(w, rows))) end
+	img:Destroy()
+	return HttpService:JSONEncode({ id = id, w = w, h = h, y0 = y0, rows = rows, b64 = data })
 elseif MODE == "runtime" then
 	-- Finds which client scripts mention each runtime-built gui name as a string literal ("Name").
 	local scripts = {}

@@ -235,7 +235,7 @@
     layer.style.opacity = String(1 - num(p.ImageTransparency, 0));
     if (!img || !img.file) {
       layer.classList.add('rn-missing');
-      layer.title = 'image not downloaded: ' + id;
+      layer.textContent = 'image unavailable · ' + id;
       return layer;
     }
     let file = img.file;

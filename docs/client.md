@@ -248,7 +248,7 @@ Every script is a `LocalScript` with `RunContext = Legacy` unless noted. "L" is 
 - `PlayScreenActive`, set by the entry flow. Read by InputController, TopHUDController:166, StaminaUIController:37 and MobileHUDLayoutController:73.
 - `BookOpen` / `SettingsOpen` / `EconomyOpen` / `MapOpen` / `MarksShopOpen` / `SkillTreeOpen`.
 
-`PlayEntryClient` clones its own `ReplicatedFirst.PlayHUD` and disables the StarterGui copy (`ReplicatedFirst/PlayEntryClient:25,156`).
+`PlayEntryClient` clones its own `ReplicatedFirst.PlayHUD` and disables the StarterGui copy (`ReplicatedFirst/PlayEntryClient:27,158`).
 
 **Mode switches:**
 
@@ -332,7 +332,7 @@ In the table, "off (EIP)" means authored disabled with `EnabledInPlay`; the owne
 | CircleUIPosition | off (EIP) / off / 0 | WovenFeedbackController (`:518` sets Enabled every 0.1 s; positions the Frame at runtime, the authored position is no longer used) | MinimapController:263 (anchor), WarderTestController (hides) | Circle member panel anchor | Live |
 | WarderTestHUD / WarderSwordFormHUD / WarderShowcaseHUD | off / off / off (EIP) | WarderTestController; Showcase enabled by GuiEnableController | – | Warder test HUD, sword-form drawing, showcase caption | Live in Warder mode (Showcase enabled but caption hidden) |
 | TutorialTextPosition | off / on / 0 | ReplicatedFirst/FirstJourneyClient | InputController (gamepad focus list) | Tutorial text | Live (entry flow) |
-| PlayHUD | off / off / 0 | none; PlayEntryClient disables this copy (`:156`; it stays disabled, no `EnabledInPlay`) and uses its own clone from ReplicatedFirst | – | Play screen | **Duplicate; StarterGui copy is legacy** |
+| PlayHUD | off / off / 0 | none; PlayEntryClient disables this copy (`:158`; it stays disabled, no `EnabledInPlay`) and uses its own clone from ReplicatedFirst | – | Play screen | **Duplicate; StarterGui copy is legacy** |
 | SettingsHUD | off / off / 1010 | only the disabled SettingsController (`:17`) | – | Old gifting/settings panel | **Legacy / dead** |
 | ButtonTemplateHUD | off (EIP) / off / 0 | `RS/Shared/ButtonTemplateView` (used by EconomyController; `:17` enables it on first use) | – | Button template source | Live (template) |
 | ReplicatedFirst/PlayHUD | template; cloned at runtime as ActivePlayHUD (DisplayOrder 10000) | RF/PlayEntryClient | – | Menu, save cards, credits | Live (entry flow) |

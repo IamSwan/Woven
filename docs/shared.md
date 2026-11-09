@@ -325,8 +325,8 @@ Client scripts also create BindableEvents at runtime: `ToggleShop` (`SPS/MarksSh
 
 **Client: intro and menu**
 
-6. `RF/PlayEntryClient` runs `showMenu(true)` (`:550`):
-   - clones PlayHUD into `ActivePlayHUD` with DisplayOrder 10000 (`:25-26`);
+6. `RF/PlayEntryClient` runs `showMenu(true)` (`:552`):
+   - waits for `game.Loaded`, then clones PlayHUD into `ActivePlayHUD` with DisplayOrder 10000 (`:26-28`). A clone taken earlier can miss descendants that have not replicated yet, such as `SaveCard.Face.Filled.SaveName`;
    - removes the default loading screen (`:151`, `:452`) and sets the `PlayScreenActive` attribute;
    - suppresses every other ScreenGui except `FirstJourneyHUD` and `ActiveSaveSlotHUD` (`:155-165`), and hides CoreGui and ProximityPrompts (`:174-178`);
    - hides other players (`:181-202`);

@@ -291,7 +291,7 @@ A source scan found 257 attribute names set by the ability modules and core serv
 
 ### 6.4 Persistent data (`DataService` profile)
 
-`LearnedWeaves` (`Services/DataService:75,695-698`), `WeaveAffinity` (cast counts for cooldown reduction, `:91,710-784`; `AffinityService.GetAdjustedCooldown`), `QuickSlots` and `ExtraQuickSlots` (`:97,794-823`), `ElementSkills` (read by `ElementSkillService:239`), `AdvancedSkills`, `SkillPoints`, `WarderSkills`, `WarderForms`, `Level`. The custom-weave library from the removed custom weaving (2026-11-09) is the profile field `CustomWeaves` (`{Schema = 1, Entries = {...}}`, never in `DEFAULT_DATA`); it is left in saves and no longer read or written.
+`LearnedWeaves` (`Services/DataService:75,719-722`), `WeaveAffinity` (cast counts for cooldown reduction, `:91,734-808`; `AffinityService.GetAdjustedCooldown`), `QuickSlots` and `ExtraQuickSlots` (`:97,818-847`), `ElementSkills` (read by `ElementSkillService:239`), `AdvancedSkills`, `SkillPoints`, `WarderSkills`, `WarderForms`, `Level`. The custom-weave library from the removed custom weaving (2026-11-09) is the profile field `CustomWeaves` (`{Schema = 1, Entries = {...}}`, never in `DEFAULT_DATA`); it is left in saves and no longer read or written.
 
 ## 7. Configuration
 

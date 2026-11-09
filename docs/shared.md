@@ -319,7 +319,7 @@ Client scripts also create BindableEvents at runtime: `ToggleShop` (`SPS/MarksSh
    - sets `ReplicationFocus` to `workspace.camerapieceforloading`;
    - builds the player's own R15 avatar as `PlayerGui/MenuAvatar`;
    - when save slots are on, sets the avatar's `MenuClass` attribute from `SaveSlotService.MenuInfo` (last slot and class from the account record).
-5. `ServerMain.onPlayerAdded` (`:58-78`) waits while `DataService.Unloading` is true, or while slots are on and the `SaveSlot` attribute is nil (`:63`). **Nothing loads until the player picks a save.**
+5. `ServerMain.onPlayerAdded` (`:58-78`) waits while `DataService.Unloading` is true, or while slots are on and the `SaveSlot` attribute is nil (`:63`). **Nothing loads until the player picks a save.** Only the save cards are read early: SaveSlotService prefetches them on join (read only).
 
 **Client: intro and menu**
 
@@ -335,7 +335,7 @@ Client scripts also create BindableEvents at runtime: `ToggleShop` (`SPS/MarksSh
    - streaming done (`RequestStreamAroundAsync` twice, `:444-451`);
    - art preloaded;
    - `Showcase.Ready`, or 8 seconds passed.
-9. The menu reveals and, with slots on, `mountCards` runs (`:533-534`). It calls `SaveSlot:InvokeServer("List")`. The server waits for any closing save, then returns `{Saves, Owned, Max, Price, LastSlot}` (`SaveSlotService:73-81`). Each save in `Saves` carries `Title`, its equipped title display name (nil when none; `DataService.PeekSlots`).
+9. The menu reveals and, with slots on, `mountCards` runs (`:533-534`). It calls `SaveSlot:InvokeServer("List")`. The server waits for any closing save, then returns `{Saves, Owned, Max, Price, LastSlot}` (`SaveSlotService:73-81`). Each save in `Saves` carries `Title`, its equipped title display name (nil when none; `DataService.PeekSlots`). SaveSlotService already started this read on PlayerAdded, and `PeekSlots` reads the saves in parallel and joins a read in flight, so `List` usually returns from cache. A slot whose read throws gets the default empty entry and a warning instead of failing the whole List.
 
 **Save pick**
 
@@ -378,7 +378,7 @@ Client scripts also create BindableEvents at runtime: `ToggleShop` (`SPS/MarksSh
 
 **Back to Main Menu**
 
-18. `SPS/C/BookController:807` sends `PlayEntry:FireServer("Menu")`. `PlayEntryServer.menu` (`:82-105`) refuses when the tutorial is active, the save is unloading or the player is busy, the player has not entered the world or the save is not ready, or less than 3 s passed since the last request. Otherwise it sets `EnteredWorld=false` and calls `DataService.Unload`, which saves and clears `SaveSlot`, `SessionDataReady` and `SaveClass` (`DataService:863`, `:890`). It destroys the character, re-runs `menuScreen` and fires "Menu". The client runs `showMenu(false)` (`PlayEntryClient:545`). ServerMain's loop waits for the next pick (`:76`). When the next save opens, client caches reset through `Shared/SaveReady`.
+18. `SPS/C/BookController:807` sends `PlayEntry:FireServer("Menu")`. `PlayEntryServer.menu` (`:82-105`) refuses when the tutorial is active, the save is unloading or the player is busy, the player has not entered the world or the save is not ready, or less than 3 s passed since the last request. Otherwise it sets `EnteredWorld=false` and calls `DataService.Unload`, which saves and clears `SaveSlot`, `SessionDataReady` and `SaveClass` (`DataService:887`, `:914`). It destroys the character, re-runs `menuScreen` and fires "Menu". The client runs `showMenu(false)` (`PlayEntryClient:545`). ServerMain's loop waits for the next pick (`:76`). When the next save opens, client caches reset through `Shared/SaveReady`.
 
 **Death and void**
 

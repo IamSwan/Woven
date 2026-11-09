@@ -113,7 +113,7 @@ All entries are ModuleScripts unless marked. "Start" means the module exposes `S
 | ChannelService | 784 | Channel start, stop and confirm; element catching; ready weave | Start. Listens `ChannelRequest`, `ElementCaught` |
 | ChannelRecoveryService | 27 | Stores the client's input mode (mobile or not) | Listens `ChannelInputMode` |
 | ManaService | 1207 | Mana pool, regen, `SpendWithBurnout`, `Mana` attribute | Start |
-| WeaveStatsService | 70 | Publishes read-only weave numbers to `ReplicatedStorage/WeaveStats` (ThreadCap, BurnoutBaseMultiplier, per-weave ManaCost/ReadyWindow/GateElement/GateTier), each read from the module gameplay uses | Start (guarded, from ServerBootstrap). Has a `SelfCheck` child. Nothing on the server reads WeaveStats |
+| WeaveStatsService | 70 | Publishes read-only weave numbers to `ReplicatedStorage/WeaveStats` (ThreadCap, BurnoutBaseMultiplier, per-weave ManaCost/ReadyWindow/GateElement/GateTier, per-weave `ManaPerSecond` (held-weave drain; Healing, PainInfliction and FireDrawing rates are copied by hand from their ability modules)), each read from the module gameplay uses | Start (guarded, from ServerBootstrap). Has a `SelfCheck` child. Nothing on the server reads WeaveStats |
 | BurnoutService | 148 | Burnout state; `InitPlayer` | |
 | AbilityService | 1691 | Routes casts to ability modules in `Server/Abilities` | Start. Listens `CastRequest` |
 | WeaveService | 88 | Matches a recipe to a weave (`IdentifyWeave`) | |

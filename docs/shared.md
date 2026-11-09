@@ -64,8 +64,8 @@ Columns: **Dir** is the direction (C→S, S→C, or both). **Fired by** and **Ha
 
 | Remote | Type | Dir | Fired by | Handled by | Payload |
 |---|---|---|---|---|---|
-| `Remotes/EconomyRequest` | RemoteFunction | C→S | `SPS/C/EconomyController:162`, `SPS/C/WovenFeedbackController:470` | `SSS/Server/EconomyServer:64` | `(action, payload)` |
-| `Remotes/EconomyChanged` (RT, `EconomyServer:12`) | RemoteEvent | S→C | `EconomyServer:25`, `SSS/Server/Services/EconomyService:138`, `SSS/Server/Services/FactionService:149` | `SPS/C/EconomyController:384`, `SPS/C/WovenFeedbackController:462` | `(payloadTable)` |
+| `Remotes/EconomyRequest` | RemoteFunction | C→S | `SPS/C/EconomyController:162`, `SPS/C/WovenFeedbackController:487` | `SSS/Server/EconomyServer:64` | `(action, payload)` |
+| `Remotes/EconomyChanged` (RT, `EconomyServer:12`) | RemoteEvent | S→C | `EconomyServer:25`, `SSS/Server/Services/EconomyService:138`, `SSS/Server/Services/FactionService:149` | `SPS/C/EconomyController:384`, `SPS/C/WovenFeedbackController:479` | `(payloadTable)` |
 | `Remotes/EconomyReady` (RT, `:31`) | RemoteEvent | C→S | `SPS/C/EconomyController:391`,`:395` | `EconomyServer:37` | `()` |
 | `Remotes/EconomyNotice` | RemoteEvent | S→C | `EconomyService:171` | `SPS/C/EconomyController:429` | `(text, amount)` |
 | `Remotes/GiftRequest` | RemoteFunction | C→S | `SPS/C/EconomyController:173`; `SPS/C/SettingsController:110` (disabled) | `SSS/Server/GiftServer:146` | `(action, passId, targetId)` |
@@ -94,7 +94,7 @@ Columns: **Dir** is the direction (C→S, S→C, or both). **Fired by** and **Ha
 | `Remotes/SprintRequest` | RemoteEvent | both | C: `SPS/InputController:437`,`:446`,`:643`,`:847`,`:881`; `SPS/AdminFlightController:94`. S: `SSS/Server/Services/SprintService:264`,`:279` | S: `SprintService:414`. C: `SPS/C/SprintController:55` | C→S `(wantSprint: bool)`; S→C `("BrokenLeg"\|"SprintRejected")` |
 | `Remotes/CombatFeedback` | RemoteEvent | S→C | `AbilityService:460`,`:615`,`:908` | `SPS/CombatFeedbackController:37` | `(action, ...)` |
 | `Remotes/WeaveFeedback` | RemoteEvent | S→C | `ChannelService:394`,`:418` | `SPS/WeaveFailureFeedbackController:200` | `(action, ...)` |
-| `Remotes/ThreadVisual` | RemoteEvent | S→C | VFX in `ChannelService:198`,`:245`,`:335`,`:459`…; `CircleService:71`,`:98`,`:113`; `AbilityService`; `CircleIntegrationService`; `GrandShield:268`,`:622`; `GuardianBondTest:65`,`:71`,`:79` [43] | `SPS/ThreadVisualController:3431`; `SPS/C/WovenFeedbackController:239` | `(action: "Add"\|"Finalize"\|"Clear"…, character, element?, index?)` |
+| `Remotes/ThreadVisual` | RemoteEvent | S→C | VFX in `ChannelService:198`,`:245`,`:335`,`:459`…; `CircleService:71`,`:98`,`:113`; `AbilityService`; `CircleIntegrationService`; `GrandShield:268`,`:622`; `GuardianBondTest:65`,`:71`,`:79` [43] | `SPS/ThreadVisualController:3431`; `SPS/C/WovenFeedbackController:256` | `(action: "Add"\|"Finalize"\|"Clear"…, character, element?, index?)` |
 | `Remotes/AbilityEffects` | RemoteEvent | S→C | VFX `AbilityService:467` | `SPS/AbilitySoundController:463` | `(action, character, abilityId, value)` |
 | `Remotes/ScreenShake` | RemoteEvent | S→C | CT `SSS/Server/Shared/ScreenShakeService:44`,`:82`,`:110`,`:137`; CT `SSS/Server/Abilities/Healing:596`,`:601`; CT `SSS/Server/Abilities/InsectControl:408`,`:475`,`:476` | `SPS/C/ScreenShakeController:353` | `(action: "Cast"\|"StartHeld"\|"StopHeld"\|"StopAllHeld", presetName)` |
 | `Remotes/CircleReworkVisual` | RemoteEvent | S→C | `ChannelService:433`,`:437`,`:539`,`:543`; `AbilityService:1040`,`:1044`; `QuickSlotService:669`; `CircleAbilityRuntime:59`; `PlayerProtectionService:48`,`:60`; `Abilities/SpiritStun:43`; `Lightning:797`,`:810`; `Tornado:43`,`:54`; `ConvergingFlame:22`; `Tempest:65`; `CustomWeaving/ExperimentService:73`,`:139` [26] | `SPS/C/CircleReworkController:48` | `("Notice", title, text)`; the de facto general toast channel |
@@ -119,7 +119,7 @@ Kept short here; validation details are in [abilities.md §5](abilities.md).
 | `BindingThreadsAction` (RT) | RE | C→S | `SPS/C/BindingThreadsController:11` | `CircleAbilities/BindingThreads:200` | `("Release")` |
 | `BoneBreakVisual` | RE | S→C | VFX `Abilities/BoneBreak:104`,`:147`,`:167`; `ChannelerNPCSpells:233` | `SPS/C/BoneBreakVisualController:28` | `(event, token, caster, target, at)` |
 | `BurnoutDeathVisual` | RE | S→C | VFX `ManaService:739`, `Trollocs/TrollocDeathService:26` | `SPS/C/BurnoutDeathVisualController:342` | `(player, character)` |
-| `CircleAction` (RT, `CircleService:34`) | RE | C→S | `SPS/C/CircleController:75` (invite toast Accept/Decline),`:133`,`:337` (pad A/B); `WovenFeedbackController:232` | `CircleService:654` | `("AcceptInvite"\|"DeclineInvite"\|"LeaveCircle"\|…)` |
+| `CircleAction` (RT, `CircleService:34`) | RE | C→S | `SPS/C/CircleController:75` (invite toast Accept/Decline),`:133`,`:337` (pad A/B); `WovenFeedbackController:249` | `CircleService:654` | `("AcceptInvite"\|"DeclineInvite"\|"LeaveCircle"\|…)` |
 | `CircleState` (RT, CircleService) | RE | S→C | `CircleService:435`,`:452`,`:482`,`:485`,`:513`,`:530`,`:636` | `SPS/C/CircleController:257` | `(action, ...)` |
 | `CircleVisual` (RT) | RE | S→C | VFX-members `CircleService:205`,`:386`,`:432`… [9] | `SPS/C/CircleVisualController:75` | `(event, leader, members, element, index)` |
 | `CircleEnvironment` (RT) | RE | S→C | VFX-members `CircleService:389`,`:434`,`:519`,`:575`,`:627` | `SPS/C/CircleScreenController:66`, `CircleEnvironmentController:127` | `(event, leader, pos, power, size, element)` |

@@ -400,7 +400,7 @@ Every client draws every caster's weave VFX locally. The server sends events or 
 | SPS/PvPCrosshairController | Superseded by Shiftlock's own `PvPCrosshairGui` (Shiftlock:23-32). |
 | SPS/IncomingWeaveBeamController | Only mentioned in a comment in GuardianBondController:340. |
 | SPS/AirPushCastThreadController, SPS/AirSlashWeaveTrailController | No references. Server `AirSlash` still references `AirSlashThreadRelease`; AirSlashWeaveTrailController was its only listener found. |
-| SPS/Controllers/IncomingThreadController (1305 L) | The server still fires `IncomingThreadVisual` (ActiveAbilityBridge, ChannelerNPCSpells, SpiritStun), but no live client listener connects. Likely dead network traffic. |
+| SPS/Controllers/IncomingThreadController (1306 L) | Disabled. The server no longer fires `IncomingThreadVisual` (sends removed 2026-11-09). Re-enabling it needs the sends restored from `MCPBackups/IncomingThreadQueue_20261109_Before`. |
 | SPS/Controllers/FireDrawingAnimationController, DreamAnimationBridge, ReadyGroundFlowController, PainContestController | Disabled. The `PainContest` remote still exists. |
 | SPS/Controllers/SettingsController | "DISABLED 2026-10-31: gifting moved into the Marks menu" (header). Would register `Gifts` in UiManager if re-enabled. |
 
@@ -473,12 +473,12 @@ Every client draws every caster's weave VFX locally. The server sends events or 
 - **Split camera/cursor ownership:** Shiftlock owns `MouseBehavior`/`RotationType`, but WarderTestController reads `MouseBehavior` (`:548`, `:585`); RawSpiritController sets `CameraSubject` (`:1091`, `:1132`); ScreenShake, CircleScreen, TempestCameraSway, FireDrawingFeedback, FireballFeedback and PainInfliction all apply camera offsets with `BindToRenderStep` around `RenderPriority.Camera` (offsets −1, +2, +3).
 - **LowDeviceModeController** keeps a `saved` table of every stripped instance while on; destroyed instances stay referenced until restore (likely memory leak in long sessions; not measured).
 - **ResponsiveUIController** fires on every `DescendantAdded` under PlayerGui and overwrites sizes/positions of runtime guis other scripts also set (HeldWardHUD, VillageConversation, WovenAdmin).
-- **Dead traffic:** the server fires `IncomingThreadVisual` (and probably `AirSlashThreadRelease`) with no live client listener.
+- **Dead traffic:** the server probably fires `AirSlashThreadRelease` with no live client listener. (`IncomingThreadVisual` sends were removed 2026-11-09.)
 - **Grep noise:** `ServerStorage/MCPBackups` copies match most searches; filter them out before concluding where something is used.
 
 ## 11. Open questions
 
-1. Is `IncomingThreadVisual` still needed, or should the disabled IncomingThreadController be deleted together with the server sends? Same for `AirSlashThreadRelease`.
+1. Answered 2026-11-09 for `IncomingThreadVisual`: server sends removed; the remote and the disabled IncomingThreadController are kept so the visual can be re-enabled. Still open for `AirSlashThreadRelease`.
 2. Should `NewQuickSlot`, `SettingsHUD` and `StarterGui.PlayHUD` be deleted? Is any art in them still wanted?
 3. Who should own MobileChannelHUD and QuickSlotHUD visibility? A single "HUD mode" attribute (Channeler / Guardian / Dialogue / Menu) could replace WarderTestController's force-hide and VillageConversation's direct writes (design suggestion).
 4. Does PlayerGui population wait for the first `LoadCharacter`, given `CharacterAutoLoads=false`? Needs a Play test.

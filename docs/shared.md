@@ -150,7 +150,7 @@ Kept short here; validation details are in [abilities.md §5](abilities.md).
 | `HeldWardStop` | RE | C→S | `SPS/HeldWardController:23`,`:28` | `HeldWardService:282` | `()` |
 | `IgniteCastApproved` | RE | S→C | CT `Abilities/Ignite:347` | `SPS/ChannelAnimationController:665` | `()` |
 | `IgniteVisual` | RE | S→C | VFX `Ignite:186`,`:224`,`:264`; `ElementalReactionService:72` [6] | `SPS/C/IgniteVisualController:20` | `(action, v1, v2)` |
-| `IncomingThreadVisual` | RE | S→C | VFX `SSS/Server/ActiveAbilityBridge:297`,`:458`; `:408` FireClient; `ChannelerNPCSpells:199` [6] | only `SPS/C/IncomingThreadController:1110` (disabled) | `(action, caster, abilityId)` |
+| `IncomingThreadVisual` | RE | S→C | none (sends removed 2026-11-09; kept for re-enabling) | only `SPS/C/IncomingThreadController:1110` (disabled) | `(action, caster, abilityId)` |
 | `InsectControlAction` (RT) | RE | C→S | `SPS/C/InsectControlController:66` | **no server handler found** | `(aim, clicked)` |
 | `InsectControlVisual` (RT) | RE | S→C | VFX `InsectControl:468` | `SPS/C/InsectControlVisualController:18` | `(action, caster, target)` |
 | `InsectControlAnimation` (RT) | RE | S→C | CT `InsectControl:405`,`:472` | `SPS/C/InsectControlAnimationController:88` | `("Start"\|"Stop")` |
@@ -417,7 +417,7 @@ Each item was checked by name grep across all live scripts, excluding MCPBackups
 - No references at all: `RagdollToggle`, `WaterInteractionVisual`, `RawWaterAnimation`.
 - Listened to but never fired: `SpiritStunVisual`, `SpiritStunFeedback`, `SpiritStunSound`, `SpiritStunAnimation`, `FireballAnimation`. Five client controllers wait for nothing.
 - Fired but never listened to (wasted bandwidth): `CircleAnimation` (`CircleService:204` and others), `RawWaterVisual` (`RawWaterFormationService:565`,`:720`), `MissionsChanged`.
-- Fired, but the only listener is disabled: `IncomingThreadVisual`, `AirSlashThreadRelease`.
+- Fired, but the only listener is disabled: `AirSlashThreadRelease`. (`IncomingThreadVisual` is no longer fired: sends removed 2026-11-09.)
 - `MissionsReady` has a server handler and no client sender, so the missions handshake has no client at all.
 - `InsectControlAction` is fired by the client (`InsectControlController:66`) and no server handler was found: either a bug or dead input.
 - `PainContest` is referenced only by the disabled `PainContestController`.

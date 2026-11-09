@@ -59,7 +59,7 @@ All Scripts use `RunContext = Legacy`; none is disabled.
 | `FunnelAnalyticsServer` | 20 | Session funnel steps 1 (join) and 2 (EnteredWorld) | FunnelAnalyticsService | none |
 | `VoluntaryReset` | 20 | Tells a self-reset apart from combat death and resolves Stilling. Rate limit 1 s | `Abilities.CircleAbilities.Stilling` | `VoluntaryCharacterReset` (RE, created if missing) |
 | `TempestReadyWeather` | 28 | Heartbeat at 0.1 s: storm weather token while a player holds a Tempest ready | TempestWeatherService | none |
-| `ActiveAbilityBridge` | 498 | Maps ready and held ability attributes to `IncomingThreadVisual` broadcasts | Shared `WeaveConfig`, `VfxBroadcast` | `IncomingThreadVisual` (S→C) |
+| `ActiveAbilityBridge` | 430 | Maps ready and held ability attributes to the `ActiveAbility` player attribute | Shared `WeaveConfig` | none |
 
 ### 2.3 `Server/Shared`
 
@@ -318,7 +318,7 @@ The Remotes folder is `ReplicatedStorage.Remotes`; the full catalogue (fired-by 
 
 ### 4.2 Server → client remotes (seen in this area)
 
-`EconomyChanged`, `EconomyNotice`, `MarksShopNotice`, `GiftNotice`, `MissionsChanged`, `TitlesChanged`, `AdminNotice`, `ProgressionFeedback`, `VillageSpeech`, `InnTravel`, `BookChatReminder` (FireAllClients, server-wide rate limit 30 s and per-player 60 s), `IncomingThreadVisual`, `ThreadVisual`, `CircleReworkVisual`, `CircleState`, `CircleAbilityVisual`, `QuickSlotCooldown`, `QuickProtectEffect`, `CircleVictimFeedback`, `SoloWeaveFeedback`, `FactionWarVisual`, `BurnoutDeathVisual`, `FireballImpactVisual`, `WardHitImpact`, `CompulsionVisual`. Bidirectional remotes also reply on the same instance (PlayEntry, Waygate, MapDiscovery, GuardianBond and others).
+`EconomyChanged`, `EconomyNotice`, `MarksShopNotice`, `GiftNotice`, `MissionsChanged`, `TitlesChanged`, `AdminNotice`, `ProgressionFeedback`, `VillageSpeech`, `InnTravel`, `BookChatReminder` (FireAllClients, server-wide rate limit 30 s and per-player 60 s), `ThreadVisual`, `CircleReworkVisual`, `CircleState`, `CircleAbilityVisual`, `QuickSlotCooldown`, `QuickProtectEffect`, `CircleVictimFeedback`, `SoloWeaveFeedback`, `FactionWarVisual`, `BurnoutDeathVisual`, `FireballImpactVisual`, `WardHitImpact`, `CompulsionVisual`. Bidirectional remotes also reply on the same instance (PlayEntry, Waygate, MapDiscovery, GuardianBond and others).
 
 **Pattern: push on change plus a Ready resync.** The server pushes full state, and the client fires `*Ready` once its listener is live to get a resend (`EconomyServer:16-42`, `MissionsServer:2-4`, `TitlesService:631`).
 

@@ -78,6 +78,7 @@ To refresh only the page (renderer or layout change, or a target.html change, no
   their owner is set in `RF_STATUS` in build.mjs.
 - **Components** are listed in `components` in build.mjs by gui key and child path. A path that no longer exists is
   reported as missing in the build summary.
+- **Authored disabled.** Every StarterGui ScreenGui is authored with `Enabled = false` (see docs/client.md §5). Guis with the `EnabledInPlay` attribute are on in Play; treat them as enabled when reading the export.
 
 ## Target design
 

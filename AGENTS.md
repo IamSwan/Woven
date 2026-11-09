@@ -55,6 +55,7 @@ Woven is a Roblox action RPG (Studio title "[WARDERS] Woven", PlaceId 1031405489
 - **VFX template:** `ReplicatedStorage/Assets/AbilityEffects`. Never at the Workspace root.
 - **Map content:** inside its region folder (`Edmond's Field/...`, `AielWaste`, `Ways`).
 - **Test-only UI or tools:** a disabled ScreenGui, or code gated by `RunService:IsStudio()`.
+- **New ScreenGui in StarterGui:** author it with `Enabled = false` so the Edit viewport stays clear. If it should show in Play, give it the `EnabledInPlay` attribute and enable it in its owner script when the script first gets it (or add it to `GuiEnableController` if no script toggles it).
 
 ### Code rules
 

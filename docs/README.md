@@ -70,7 +70,6 @@ The exact rules are in [abilities.md](abilities.md) and [server.md](server.md).
 | Raw element | An element used directly: Raw Air hold and push, Raw Fire drawing, Raw Water, Raw Earth, Raw Spirit dreamwalking. |
 | Circle | A linked group of channelers. The leader casts circle weaves with pooled power. |
 | Ward | A protective weave. It can be set only at `WardZones`; there is also a held ward. |
-| Custom weaving | Experimenting with your own recipes from the book (the Loom). |
 | Burnout | The state reached by overspending mana (`BurnedOut`). |
 | Stilling / Stilled | Being cut off from channeling for a time, tracked account-wide. |
 | Mana, Stamina | The casting resource and the sprint resource, shown as player attributes. |

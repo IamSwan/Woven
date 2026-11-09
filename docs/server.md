@@ -2,7 +2,7 @@
 
 Taken from the live code in Roblox Studio (Edit DataModel), read-only, 2026-11-08. Citations are `Path/Script:line`. Paths under `ServerScriptService` drop that prefix, and `Server/Services` is written `Services/`. Line numbers drift as code changes.
 
-Related docs: [architecture.md](architecture.md), [abilities.md](abilities.md) (`Server/Abilities`, `Server/CustomWeaving`, cast pipeline), [shared.md](shared.md) (full remote catalogue), [workflow.md](workflow.md).
+Related docs: [architecture.md](architecture.md), [abilities.md](abilities.md) (`Server/Abilities`, cast pipeline), [shared.md](shared.md) (full remote catalogue), [workflow.md](workflow.md).
 
 ## 1. Scope
 
@@ -13,10 +13,10 @@ Related docs: [architecture.md](architecture.md), [abilities.md](abilities.md) (
   - `Server/Shared`: one module.
   - `Server/Services`: 144 ModuleScripts and 1 Script, including the `Trollocs/` and `Warder/` subfolders.
 
-Out of scope here: `Server/Abilities` and `Server/CustomWeaving` (see [abilities.md](abilities.md)), ReplicatedStorage, client code, Workspace and ServerStorage. They appear only where this area calls into them:
+Out of scope here: `Server/Abilities` (see [abilities.md](abilities.md)), ReplicatedStorage, client code, Workspace and ServerStorage. They appear only where this area calls into them:
 
 - `AbilityService` loads the per-weave modules in `Server/Abilities` and starts them (`AbilityService:1579-1620`).
-- `ServerBootstrap` requires `Server.CustomWeaving.ExperimentService` (`ServerBootstrap:61`) and starts `Server.Abilities.RawWater` (`ServerBootstrap:118`).
+- `ServerBootstrap` starts `Server.Abilities.RawWater` (`ServerBootstrap:118`).
 - `ServerMain`, `VoluntaryReset` and `DamageService` call `Abilities.CircleAbilities.Stilling` and `Abilities.RawEarth` directly (`ServerMain:82,100`, `VoluntaryReset:16`, `DamageService:423,494`).
 - Nearly every module reads `ReplicatedStorage.Shared.*` configs.
 
@@ -30,7 +30,7 @@ All Scripts use `RunContext = Legacy`; none is disabled.
 
 | Path | Lines | Responsibility | Key requires | Remotes |
 |---|---|---|---|---|
-| `ServerBootstrap` | 137 | Newer entry point. Starts about 17 subsystems, each in its own `task.spawn` + `xpcall` | Services listed in §3 | none directly |
+| `ServerBootstrap` | 136 | Newer entry point. Starts about 17 subsystems, each in its own `task.spawn` + `xpcall` | Services listed in §3 | none directly |
 | `HealthManager` | 65 | MaxHealth = base 250 plus tier, Vitality and Warder bonuses. Keeps missing HP when the max changes; full heal on spawn | Shared `ElementSkillConfig`, `AdvancedSkillConfig`, `WarderSkillConfig` | none |
 | `PlayEntryServer` | 144 | Play and Back-to-Menu flow. Sets `CharacterAutoLoads=false`, owns spawning, kills at the void plane (Y < -200), builds the menu avatar | DataService, FirstJourneyService, SaveSlotService | `PlayEntry` (RE) |
 | `WeavePresentationObserver` | 27 | Writes `WeaveReadySeed`/`WeaveReadyAt` when a player enters WeaveReady. Forwards `SpiritTechniqueActive` to presentation | WeavePresentationService | none |
@@ -110,16 +110,16 @@ All entries are ModuleScripts unless marked. "Start" means the module exposes `S
 
 | Module | Lines | Responsibility | Notes |
 |---|---|---|---|
-| ChannelService | 784 | Channel start, stop and confirm; element catching; ready weave | Start. Listens `ChannelRequest`, `ElementCaught` |
+| ChannelService | 754 | Channel start, stop and confirm; element catching; ready weave | Start. Listens `ChannelRequest`, `ElementCaught` |
 | ChannelRecoveryService | 27 | Stores the client's input mode (mobile or not) | Listens `ChannelInputMode` |
 | ManaService | 1207 | Mana pool, regen, `SpendWithBurnout`, `Mana` attribute | Start |
 | WeaveStatsService | 70 | Publishes read-only weave numbers to `ReplicatedStorage/WeaveStats` (ThreadCap, BurnoutBaseMultiplier, per-weave ManaCost/ReadyWindow/GateElement/GateTier, per-weave `ManaPerSecond` (held-weave drain; Healing, PainInfliction and FireDrawing rates are copied by hand from their ability modules)), each read from the module gameplay uses | Start (guarded, from ServerBootstrap). Has a `SelfCheck` child. Nothing on the server reads WeaveStats |
 | BurnoutService | 148 | Burnout state; `InitPlayer` | |
-| AbilityService | 1691 | Routes casts to ability modules in `Server/Abilities` | Start. Listens `CastRequest` |
+| AbilityService | 1689 | Routes casts to ability modules in `Server/Abilities` | Start. Listens `CastRequest` |
 | WeaveService | 88 | Matches a recipe to a weave (`IdentifyWeave`) | |
 | LearnedWeaveService | 207 | Learned-weave inventory, `LearnedWeave_*` attributes | Start |
 | AbilityOwnershipService | 100 | `Abilities.weave` / `.warder`, shown as `HasAbility_*` attributes | Start → `OnSession` |
-| QuickSlotService | 925 | Quick slots, loadouts, cooldowns, Extra Quick Slots pass | Start. Listens `QuickSlotAssign`, `QuickSlotUse`, `QuickSlotSwitch` |
+| QuickSlotService | 909 | Quick slots, loadouts, cooldowns, Extra Quick Slots pass | Start. Listens `QuickSlotAssign`, `QuickSlotUse`, `QuickSlotSwitch` |
 | AffinityService, MaximumAffinityService | 425 / 76 | Weave affinity; the pass entitlement | Start / – |
 | ElementSkillService, ElementAlignmentPolicy | 287 / 89 | Skill points, tiers, alignment purchase; mastery gate map in the pure child `ElementSkillService/MasteryGates` | Listens `ElementSkillPurchase`, `ChooseElementAlignment`, `ChangeElementAlignment` (RF, all created at require time) |
 | ProgressionService | 510 | XP and level, 2x XP pass, kill and assist XP | Start |
@@ -215,22 +215,21 @@ All entries are ModuleScripts unless marked. "Start" means the module exposes `S
 1. CrumbleAnimation: binds attribute listeners inline.
 2. `PlayerProtectionService.Start`.
 3. `MovementStateService.Start` (ServerMain calls it too; the guard makes the second call a no-op).
-4. `require(Server.CustomWeaving.ExperimentService)` (the require is the start).
-5. `ListeningWardVoiceService.Start` (SilenceService also calls it; guarded).
-6. `TrollocEquipmentService.Start`.
-7. `TrollocSpawnService.Start` → `TrollocService.Start`, then `TrollocRaidDirector.Start`, then `TrollocDevCommands.Start`.
-8. `require(WaterInteractionService)`.
-9. `VillageNPCService.Start`.
-10. `GuardService.Start`.
-11. `HeldWardService.Start`.
-12. `AdminService.Start` → `AdminFlightService.Start`, `WarderCombatService.Start` → `WarderSkillService.Start` (`AdminService:880-882`, `WarderCombatService:1540-1542`).
-13. `require(ElementSkillService)` (the module body connects its RemoteFunctions, `ElementSkillService:172-220`).
-14. `require(SpiritTechniqueService)` (the module body connects its remote).
-15. `require(Server.Abilities.RawWater).Start()`.
-16. `SilenceService.Start`.
-17. `StatusDurationService.Start`.
-18. `QuickProtectService.Start`.
-19. `WeaveStatsService.Start` (builds `ReplicatedStorage/WeaveStats`; requires ChannelService and ManaService, which have no require-time side effects).
+4. `ListeningWardVoiceService.Start` (SilenceService also calls it; guarded).
+5. `TrollocEquipmentService.Start`.
+6. `TrollocSpawnService.Start` → `TrollocService.Start`, then `TrollocRaidDirector.Start`, then `TrollocDevCommands.Start`.
+7. `require(WaterInteractionService)`.
+8. `VillageNPCService.Start`.
+9. `GuardService.Start`.
+10. `HeldWardService.Start`.
+11. `AdminService.Start` → `AdminFlightService.Start`, `WarderCombatService.Start` → `WarderSkillService.Start` (`AdminService:880-882`, `WarderCombatService:1540-1542`).
+12. `require(ElementSkillService)` (the module body connects its RemoteFunctions, `ElementSkillService:172-220`).
+13. `require(SpiritTechniqueService)` (the module body connects its remote).
+14. `require(Server.Abilities.RawWater).Start()`.
+15. `SilenceService.Start`.
+16. `StatusDurationService.Start`.
+17. `QuickProtectService.Start`.
+18. `WeaveStatsService.Start` (builds `ReplicatedStorage/WeaveStats`; requires ChannelService and ManaService, which have no require-time side effects).
 
 **Other starters spread across scripts:**
 
@@ -296,7 +295,7 @@ The Remotes folder is `ReplicatedStorage.Remotes`; the full catalogue (fired-by 
 | `CombatStateRequest` | RE | `Services/CombatService:133` | `"TogglePvP"` / `"SetPvP", bool` | Bool check, not while Dead. **No rate limit.** `PvPMode` is read only by client camera and aim code plus `Shared.ProjectileAimService`; no server gameplay check reads it, so the risk is low. |
 | `TiedWeaveAction` | RE | `CombatService:234` | `"Tie"` / `"Untie"` | `busy` plus 0.15 s. Level ≥ 100 plus Beyond the Pattern, not Stilled, MagicSuppressed or BurnoutRecovery, alive, and a live candidate session. |
 | `ChannelRequest` | RE | `Services/ChannelService:696` | `"Start"` / `"Stop"` / `"Confirm"` | Gated by the `CombatState` machine. Unknown strings are ignored. No rate limit; repeats are no-ops but each state change broadcasts. |
-| `ElementCaught` | RE | `ChannelService:746` → `AddElement:257` | `elementName, spawnPosition` | Blocked while custom-experimenting, dragged, fire-held, being stilled, burnout recovering or spirit-stunned. State must be `Channeling`. `isValidElement`. Thread count ≤ 10. **No timing check by design** (`:309-314`). `spawnPosition` is only `typeof`-checked, then rebroadcast to nearby clients through `VfxBroadcast` with **no range or NaN check**. Wrapped by CircleIntegrationService. |
+| `ElementCaught` | RE | `ChannelService:746` → `AddElement:257` | `elementName, spawnPosition` | Blocked while dragged, fire-held, being stilled, burnout recovering or spirit-stunned. State must be `Channeling`. `isValidElement`. Thread count ≤ 10. **No timing check by design** (`:309-314`). `spawnPosition` is only `typeof`-checked, then rebroadcast to nearby clients through `VfxBroadcast` with **no range or NaN check**. Wrapped by CircleIntegrationService. |
 | `CastRequest` | RE | `CircleIntegrationService:988` (first), `AbilityService:1630` | `aimPosition` | Circle path: not Stilled, leader, WeaveReady, Circle weave, connected. Ability path: burnout lock, per-player re-entrancy lock, then `CastCurrentWeave` gates (`:973-1030`). **`aimPosition` is not validated centrally**; see [abilities.md](abilities.md) §11. |
 | `SprintRequest` | RE | `Services/SprintService:247` | `isHeld` bool | Session exists, bool type, BrokenLeg, `canSprint`. |
 | `QuickSlotAssign` / `QuickSlotUse` / `QuickSlotSwitch` | RE | `Services/QuickSlotService:288,667,812` | `(abilityId, slot)` / `(slot, aim, individual)` / `(inputMode)` | Assign: valid ability, quick-slot allowed, learned, `validSlot`; custom IDs must be in the player's library; loadout 2 needs the pass. Use: tutorial gate, pass, `isQuickCastBlocked`, cooldowns; `individualQuickCast` is forced on at level ≥ 100 (`:672`). |
@@ -377,7 +376,7 @@ QuickSlots={"","","","",""}, Titles={Owned={}, Equipped="", Expires={}}
 - `EconomyXPReceipts` (`EconomyService:376`).
 - `Stilled`, `StilledRemaining`, `Silenced`, `SilencedRemaining`, `LastPlayed`: written on save (`:550-556`).
 - ElementSkillService fields: `SkillPoints`, `ElementSkills`, `ElementAlignment`, `AdvancedSkills` (inferred from `ElementSkillService:160-226`).
-- Warder fields `WarderSkills`, `WarderForms`, and the custom-weave library (key name not checked).
+- Warder fields `WarderSkills`, `WarderForms`, and `CustomWeaves`, the library of the removed custom weaving (unread since 2026-11-09; kept in saves because reconcile never strips unknown fields).
 
 **Versioning.** There is no schema version number. Compatibility relies on:
 

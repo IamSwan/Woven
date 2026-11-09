@@ -33,7 +33,7 @@ The Ways (an interior with waygates) link Edmond's Field and Aiel Waste. A separ
   - The props carry many `Air*` attributes, e.g. `AirManipulatable`, `AirImpactDamage`, `AirBreakEffectFolder`, `AirRespawnDelay`.
   - Read by `ServerScriptService/Server/Services/RawAirObjectService:27`.
   - Note: `FirstJourneyService:89–90, 238` looks for `workspace.Interactables` at the Workspace root and creates that folder if missing. That is a different folder from `Edmond's Field.Interactables`.
-- **TheInn** (3,200 descendants, at about (13, 79, 2656)) with an **InnResidents** folder. Used by `ServerScriptService/Server/InnTeleport:4–7` (which also needs `InnTeleportOutside` and `InnTeleportInside` under the map), `…/Server/InnResidents:1,4`, `…/Server/VillageTeachers:204`, `ReplicatedStorage/Shared/CombatTargets:43–44` and `…/Server/CustomWeaving/CombatAdapter:45`.
+- **TheInn** (3,200 descendants, at about (13, 79, 2656)) with an **InnResidents** folder. Used by `ServerScriptService/Server/InnTeleport:4–7` (which also needs `InnTeleportOutside` and `InnTeleportInside` under the map), `…/Server/InnResidents:1,4`, `…/Server/VillageTeachers:204`, `ReplicatedStorage/Shared/CombatTargets:43–44`.
 - **About 65 unnamed `Model`s**: houses with `Roof`, `Wall`, `Brick Furnace` and `OptimizedRoofGeometry`, plus gardens and haystacks. Scenery; names not referenced.
 - Code finds this folder by the exact name `"Edmond's Field"`, apostrophe included (`InnTeleport:4`, `InnResidents:4`, `VillageTeachers:204`). Renaming it breaks the Inn.
 

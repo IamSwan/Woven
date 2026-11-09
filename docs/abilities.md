@@ -7,12 +7,11 @@ Related docs: [server.md](server.md) (services, boot, persistence), [client.md](
 ## 1. Scope
 
 - `ServerScriptService/Server/Abilities`: 33 direct children, which are 32 ModuleScripts plus the `CircleAbilities` folder of 14 modules (46 modules in total).
-- `ServerScriptService/Server/CustomWeaving`: 17 ModuleScripts.
 - The services that make up the cast pipeline in `ServerScriptService/Server/Services`: `ChannelService`, `WeaveService`, `AbilityService`, `CircleIntegrationService`, `CircleWeaveService`, `CircleAbilityRuntime`, `SoloWeaveRuntime`, `ManaService`, `CombatService`, `HeldWardService`, `WardService`, `QuickSlotService`, `ElementSkillService`, `LearnedWeaveService`, `WeavePresentationService`, `WarderSkillService`, `WarderCombatService`, `GuardianBondService`. Each is described only as far as the pipeline needs.
 - The shared configs in `ReplicatedStorage/Shared` that drive weaves.
 - On the client, only what starts a cast: `StarterPlayerScripts/InputController`, `StarterPlayerScripts/ChannelController`, `Controllers/FireballController`, `Controllers/FireballVisualController`.
 
-Every module under `Abilities` and `CustomWeaving` is a ModuleScript; they run only because services require them. The pipeline is booted from `ServerScriptService/Server/ServerMain` (see [server.md §3](server.md)).
+Every module under `Abilities` is a ModuleScript; they run only because services require them. The pipeline is booted from `ServerScriptService/Server/ServerMain` (see [server.md §3](server.md)).
 
 ## 2. Mechanic model (as the code defines it)
 
@@ -22,7 +21,7 @@ Every module under `Abilities` and `CustomWeaving` is a ModuleScript; they run o
 
 **Threads and elements.** While channeling, the player catches element buttons. Each catch sends `ElementCaught(elementName, spawnPosition)`, and the server appends the element to the weave (`ChannelService:257-343`). There are five elements: `Air`, `Fire`, `Water`, `Earth` and `Spirit`. A name is valid only when it is a key of `ElementConfig` (`ChannelService:79-91`, `ReplicatedStorage/Shared/ElementConfig:7-92`). A weave holds at most 10 threads (`MAX_THREADS_PER_WEAVE`, `ChannelService:35`, exposed read-only as `ChannelService.MaxThreadsPerWeave`). The server mirrors the thread list into the `GatheredThreadCount` and `GatheredThreadElements` attributes.
 
-**Weave (recipe).** A weave is an entry in `WeaveConfig` with an `Elements` list. By default the order matters; `OrderMatters = false` turns it into multiset matching (`ServerScriptService/Server/Services/WeaveService:61-85`). Confirming (`ChannelRequest("Confirm")`) runs `WeaveService.IdentifyWeave`. On a match, the player becomes `WeaveReady`, the `ReadyWeave` attribute is set to the ability id, and walk speed drops to 5 (`ChannelService:441-463`). On no match, the server sends `WeaveFeedback("WeaveFailed")` and the channel collapses (`ChannelService:413-430`), unless the player is eligible for custom weaving, in which case the server first tries `ExperimentService.TryOpen` (`ChannelService:415`).
+**Weave (recipe).** A weave is an entry in `WeaveConfig` with an `Elements` list. By default the order matters; `OrderMatters = false` turns it into multiset matching (`ServerScriptService/Server/Services/WeaveService:61-85`). Confirming (`ChannelRequest("Confirm")`) runs `WeaveService.IdentifyWeave`. On a match, the player becomes `WeaveReady`, the `ReadyWeave` attribute is set to the ability id, and walk speed drops to 5 (`ChannelService:441-463`). On no match, the server sends `WeaveFeedback("WeaveFailed")` and the channel collapses (`ChannelService:413-430`).
 
 **Casting.** In `WeaveReady`, the PrimaryAction (click or tap) sends `CastRequest(aimPosition)`, and the server runs `AbilityService.CastCurrentWeave` (`ServerScriptService/Server/Services/AbilityService:973-1576`). Many weaves have several stages: Fireball, AirBlades, RockThrow, RockBarrage, Lightning and FireballBarrage put the player back to `Idle` or a custom state and expose their own `<Id>Action` remote for the follow-up click.
 
@@ -46,8 +45,6 @@ Every module under `Abilities` and `CustomWeaving` is a ModuleScript; they run o
 - It redefines CircleOfFlame, EarthBend, ConvergingFlame, EarthRampart and TimeChange.
 
 The `WeaveConfig` file text is therefore *not* the live data. Always read it through `require`.
-
-**Custom weaving.** A recipe that matches no official weave can open an "experiment". This needs a level-100 player in the test group (group 1094525496, rank ≥ 3) and, outside Studio, the `CustomWeaving.LiveCastingEnabled` folder attribute (currently `true`). The player picks a Structure and up to 4 Manipulations. A data-only interpreter compiles that into a capability graph: Projectile, Rotation, Heat, Force, Barrier, Restraint, Detection, Cooling, Interference. Results can be saved to a per-player library and cast like normal weaves (`CustomWeaving/ExperimentService`, `Interpreter:11-52`, `Capabilities:6-35`). Official recipes and mechanically identical graphs are "Protected" and refused (`CustomWeaving/OfficialProtection:8-25`; `Interpreter:21-22,46-47`).
 
 **Warders / Guardians.** A separate melee class. Players see "Guardian" and "Channeler"; ids in code still say "Warder" (`ReplicatedStorage/Shared/GuardianBondConfig:1`). A Warder has 6 skill branches of 10 nodes (`ReplicatedStorage/Shared/WarderSkillConfig:4-99`), bought with SkillPoints (Bond points for the WarderBond branch). The weaving system touches Warders in three places:
 
@@ -141,27 +138,7 @@ Shorthand: **R** = key requires, **Rm** = remotes used (`*` = created at runtime
 | `Tempest` | 248 | Storm (lightning plus flood) | Yes | CircleReworkVisual, LightningVisual |
 | `Stilling` | 358 | Stilling / Untying Knots (Spirit×5, min 4) | Yes | StillingContest*, StillingVisual* |
 
-### 3.4 `CustomWeaving`
-
-| Module | Lines | Responsibility | R | Rm |
-|---|---|---|---|---|
-| `ExperimentService` | 200 | Session, library and cast adapters; the only remote | TestAccess, Interpreter, Validation, Sandbox, EffectRuntime, LibraryService, Channel/Mana/Combat | CustomWeaveExperiment, CircleReworkVisual |
-| `TestAccess` | 44 | Group-rank gate, cached 120 s; sets `CustomWeaveTestAccess` | — | — |
-| `Interpreter` | 59 | `Compile(input, ctx)` → status, graph, balance | Registry, Validation, Interactions, Capabilities, Balance, OfficialProtection | — |
-| `Registry` | 51 | Element properties, Structures, Manipulations, Limits | — | — |
-| `Validation` | 50 | Input sanitizing, `Canonical` keys | Registry | — |
-| `Interactions` | 24 | Element-property interactions | — | — |
-| `Capabilities` | 42 | Graph node builder | — | — |
-| `Balance` | 41 | Mana, stability, affordability | Registry | — |
-| `OfficialProtection` | 52 | Recipe and mechanics protection against the live WeaveConfig | WeaveConfig | — |
-| `EffectRuntime` | 267 | Bounded executor loop (sandbox and live) | Sandbox, EffectGeometry, CombatAdapter, CastMotion, WeaveAudio, Mana/Movement/Channel/Combat | — |
-| `CombatAdapter` | 80 | Routes custom contact through ward, shield and damage rules | SpiritBlockProtection, HeldWard, CircleService, DamageService | — |
-| `Sandbox` | 83 | Test-lab area | EffectRuntime | — |
-| `LibraryService` | 90 | Saved inputs in the profile (never saved graphs) | DataService, Interpreter, Validation | — |
-| `EffectGeometry`, `CastMotion`, `WeaveAudio` | 47–69 | Presentation helpers | — | — |
-| `DeveloperSimulator` | 95 | Studio-only manual simulator (nothing calls it automatically) | Interpreter etc. | — |
-
-### 3.5 Shared configs and helpers (`ReplicatedStorage/Shared`)
+### 3.4 Shared configs and helpers (`ReplicatedStorage/Shared`)
 
 Counts are the number of non-backup scripts that name the module (server/client).
 
@@ -203,7 +180,7 @@ Fireball has the recipe `Fire, Fire, Air` with order mattering (`WeaveConfig` en
 `CastCurrentWeave` (`:973-1576`) then:
 
 - re-checks Compulsion, the victim and suppression attributes, `TornadoCaught`, burnout and `MagicSuppressed`, and that the state is `WeaveReady` (`:974-1008`);
-- hands custom weaves to `ExperimentService.Cast` (`:1022`) and ignores Circle `ReadyWeave`s (`:1024`);
+- ignores Circle `ReadyWeave`s (`:1024`);
 - re-identifies the recipe from the server weave (`:1026`), never from client input;
 - re-checks the mastery, Crumble and Healing (`HealingFlowConfig.CanCast`) gates (`:1038-1047`);
 - calls `CombatService.BeforeHeldWeave` (`:1048`);
@@ -269,7 +246,6 @@ All remotes here are RemoteEvents unless marked (RF). `*` marks remotes created 
 | `RawAirAction`, `RawWaterAction`*, `RawEarthAction`*, `RawSpiritAction` | raw weaves | technique-specific | Server-owned state machines; the RawEarth header says clients "never damage or charge" |
 | `HeldWardAim` / `HeldWardStop` | HeldWardService | aim / — | Stop ignored while tied (`Services/HeldWardService:281-282`) |
 | `AirPrisonAction`*, `GrandShieldAction`*, `BindingThreadsAction`*, `CircleAbilityAction`*, `StillingContest`* | Circle / Shielding | — | Not traced (CircleAbilityAction: see [server.md §4.1](server.md)) |
-| `CustomWeaveExperiment` | ExperimentService | `action, token, request` | `enabled(p)` every call; session token; 1 s List throttle; 0.12 s Preview throttle; Preview request keys whitelisted (`Structure`, `Manipulations`, `Mana`, `Revision`); server recompiles and never accepts a graph (`CustomWeaving/ExperimentService:111-192`) |
 | `GuardianBond` | GuardianBondService | — | See [server.md §4.1](server.md) |
 | `WarderSkillPurchase` (RF) | WarderSkillService | `id, tier` | 0.15 s throttle; valid tree; not in tutorial; is a Warder; level and points (`Services/WarderSkillService:147-173`, `WarderSkillConfig:154-175`) |
 | `ElementSkillPurchase`*, `ChooseElementAlignment`*, `ChangeElementAlignment`* (RF) | ElementSkillService | — | See [server.md §4.1](server.md) |
@@ -285,7 +261,7 @@ Most transient visuals go through `VfxBroadcast.FireNearby(remote, pos, radius, 
 
 ### 6.1 Server-only tables (not replicated)
 
-- `ChannelService.activeWeaves[player] = {Elements, LastCatchTime, IsQuickSlot?, CustomId?, MoveHandle}` (`ChannelService:42`).
+- `ChannelService.activeWeaves[player] = {Elements, LastCatchTime, IsQuickSlot?, MoveHandle}` (`ChannelService:42`).
 - `AbilityService.activeCastRequests` (`:181`).
 - A per-module `sessions[player]` table in almost every ability (e.g. `Fireball:97`).
 - `SoloWeaveRuntime.casting`; `CombatService.tiedWeaves`; the Circle registries in `CircleAbilityRuntime` (`active`, `tiedMaintained`, `placedFlames`, `wards`, `walls`).
@@ -300,7 +276,6 @@ A source scan found 257 attribute names set by the ability modules and core serv
 - **Per-weave `<Id>Active` / `<Id>Ready` flags:** `FireballActive`, `FireballReady`, `FireballThrowAt`, `AirBladesActive`, `AirBladesReady`, `RockThrowActive`, `RockBarrageActive`, `LightningPrepared`, `HealingActive`, `PainInflictionActive`, `FireHoldActive`, `FoldedLightActive`, `ListeningWardActive`, `PowerChannelActive`, `RawAirActive`, `RawWaterActive`, `RawEarthActive`, `FireDrawingActive`, `GrandShieldActive`, `HeldWardActive`, `StillingActive`, `BoneBreakActive`, and others. These names matter in two places:
   1. `WeaveConfig.<Id>.IncomingThreads.Activation.Attribute` keys `ActiveAbilityBridge` (`ActiveAbilityBridge`).
   2. `WarderGate.HasLiveWeave` treats **any** attribute ending in `Active` as a live weave (`WarderGate:14-21`).
-- **Custom weaving:** `CustomWeaveTestAccess`, `CustomWeaveExperimenting`, `CustomWeaveTestActive`, and on the character `CustomPreview*`, `CustomLoom*`, `CustomReadyMana`.
 - **Progression:** `<Element>Tier` (AirTier, FireTier, ...), `ElementAlignment`, `AllElementAlignment`, `SkillPoints`, `XP`, `<WarderBranch>Tier`, `GuardianBond`, `GuardianBondRole`, `GuardianBondXP`.
 
 ### 6.3 Workspace folders
@@ -311,12 +286,12 @@ A source scan found 257 attribute names set by the ability modules and core serv
 | `SoloWeaveEffects` | `SoloWeaveRuntime:17-18`, ChannelerNPCSpells | Invisible marker parts for AirSlash/Tornado/Crumble |
 | `RawEarthEffects` | RawEarth | Rocks, walls, soldiers |
 | `ActiveThreads` | Client `ThreadVisualController` (also referenced by server `Abilities/RawAir`) | Client thread actors |
-| `ActiveCircleShields` | GrandShield, CustomWeaving/CombatAdapter | Shield domes |
+| `ActiveCircleShields` | GrandShield | Shield domes |
 | `WardZones` | Authored; read by `WardVisualController` and WardService | Doorway ward zones |
 
 ### 6.4 Persistent data (`DataService` profile)
 
-`LearnedWeaves` (`Services/DataService:75,695-698`), `WeaveAffinity` (cast counts for cooldown reduction, `:91,710-784`; `AffinityService.GetAdjustedCooldown`), `QuickSlots` and `ExtraQuickSlots` (`:97,794-823`), `ElementSkills` (read by `ElementSkillService:239`), `AdvancedSkills`, `SkillPoints`, `WarderSkills`, `WarderForms`, `Level`. The custom-weave library is stored as "versioned inputs in the existing profile" (`CustomWeaving/LibraryService` header); the key name was not checked.
+`LearnedWeaves` (`Services/DataService:75,695-698`), `WeaveAffinity` (cast counts for cooldown reduction, `:91,710-784`; `AffinityService.GetAdjustedCooldown`), `QuickSlots` and `ExtraQuickSlots` (`:97,794-823`), `ElementSkills` (read by `ElementSkillService:239`), `AdvancedSkills`, `SkillPoints`, `WarderSkills`, `WarderForms`, `Level`. The custom-weave library from the removed custom weaving (2026-11-09) is the profile field `CustomWeaves` (`{Schema = 1, Entries = {...}}`, never in `DEFAULT_DATA`); it is left in saves and no longer read or written.
 
 ## 7. Configuration
 
@@ -386,7 +361,6 @@ No two enabled entries share a recipe signature.
 - **Per-weave:** `PowerChannelConfig` (animation and sound ids), `FireballConfig` (`Procedural = true`; legacy clip ids), `AirBladesConfig` (sounds, blade rotation offset), `LightningConfig` (client only), `RockThrowConfig`, `SpiritStunConfig` (client only; server SpiritStun does not read it), `BoneBreakConfig` (authored timeline), `CrumbleConfig` (animations, converge timings), `HealingFlowConfig` (`CastDelay 2` gate via `WeaveReadyAt`), `FinisherConfig` (finisher sound profile per weave; `Resolve(id)`), `StillingContestConfig` (contest payment and click race), `FlightConfig` (admin flight), `HeldWardConfig` (`ManaPerSecond 8`, `WalkSpeed 6`, radii), `RawSpiritConfig` / `RawSpiritProgression` (SpiritTier gates), `RawWaterConfig`, `RawEarthConfig` (charge, cost and construct numbers), `RawFireConfig`.
 - **Presentation-only:** `*WeavePattern`, `SoloWeavePatterns`, `WeaveGestureLibrary` (`Sets[id]` = gesture variants; `Excluded[id]` skips presentation: Crumble, FireHold, RockBarrage, RockThrow), `WeaveMotionConfig`, `FireGestureConfig`.
 - **Warder:** `WarderConfig` (V1 melee numbers), `WarderTest` (V2 prototype), `WarderSkillConfig` (`Order`, `Costs`, `Levels`, `Caps`, `Trees[branch].Nodes[tier] = {Name, Effect, stat bonuses such as WarderHealth/FightingStamina/Agility/StaminaRegen/Strength/Uppercut}`), `GuardianBondConfig` (bond numbers).
-- **`CustomWeaving/Registry`**: `Version`, `Limits` (Threads 10, Operations 4, Investment 1000, Damage 60, Range 65, Duration 12, Targets 6, Objects 3), `Elements` properties, `Structures`, `Manipulations`.
 
 ## 8. Conventions observed
 
@@ -416,6 +390,7 @@ No two enabled entries share a recipe signature.
 - **Backups:** `ServerStorage/MCPBackups` (contains copies of ability scripts such as `AlliesAll_20261106_Before.Lightning`), `ReadabilityBackup_*`, `DisabledFlood`. They do not run, but search tools return hits inside them.
 - **Warder V1 vs V2:** `Services/WarderService` (Script, V1 melee via `WarderRequest`) and `Services/WarderCombatService` (V2 "Combat Test" prototype, entered only via `AdminService.Execute`, `:2-4`) both exist.
 - **Two server entry points:** `ServerMain` (legacy, boots this pipeline) and `ServerBootstrap` (newer); see [server.md §3](server.md).
+- Custom weaving: removed 2026-11-09 (server folder, remote, Shared book and Loom modules). Backup in `ServerStorage/MCPBackups/RemoveCustomWeaving_20261109_Before`; the saved library field stays in saves, unread. Saved quick slots holding a `Custom:` id are cleared to empty on load.
 
 ## 10. How to change this area
 
@@ -430,7 +405,7 @@ No two enabled entries share a recipe signature.
 7. **If held:** add the id to `heldWeaveIds` in `Services/CombatService:167-169`. If it should be tieable, add a `tieAdapters` entry and implement `TieSession` / `DetachTie` / `StopTie` (`:158-166`).
 8. **If it is a projectile:** register it with `ProjectileService` and check `WardService.IsMagicPathBlocked`, `HeldWardService.BlockPath`, `GrandShield.BlocksDamage` and `FactionWarService.BlocksFriendlyEffect` (copy from Fireball). Deal damage only through `DamageService.DealDamage(src, hum, amount, "<Id>")` so the Circle and modifier wrappers apply.
 9. **If it should be mastery-gated:** add the weave to `Services/ElementSkillService/MasteryGates` (the gate, also published in `ReplicatedStorage/WeaveStats`) and to the damage-penalty map at `ElementSkillService:250` *and* the notice strings repeated in `ChannelService:431-439`, `:537-545` and `AbilityService:1038-1046`.
-10. **Optional:** `FinisherConfig.Resolve` (Fire weaves automatically get "Charred"), AffinityService cooldown behaviour (automatic through `RecordCast`), a `VillageTeachingConfig` / `FirstJourneyService` lesson (not traced), and `CustomWeaving/OfficialProtection` coverage (automatic for the recipe; extend the mechanic signatures only for new executors).
+10. **Optional:** `FinisherConfig.Resolve` (Fire weaves automatically get "Charred"), AffinityService cooldown behaviour (automatic through `RecordCast`), a `VillageTeachingConfig` / `FirstJourneyService` lesson (not traced).
 11. **Warder interaction:** if the weave's live attribute ends in `Active`, `WarderGate` handles it automatically.
 12. **Docs:** add the module to §3.2, its recipe to §7, its remotes to [shared.md §2.5](shared.md), and its client scripts to [client.md](client.md).
 
@@ -457,11 +432,10 @@ A large change: every place below hard-codes the five elements.
 1. `ElementConfig`: the new entry plus `Order`. Clients build their buttons from it (`ChannelController`); the server validates names against it (`ChannelService:79-91`).
 2. `ElementSkillConfig.Elements` and its tree (`:2-18`).
 3. `ElementMastery` (Air/Fire special cases, `:23-33`), `ElementSkillService` alignment and mastery maps.
-4. `CustomWeaving/Registry.Elements` (property table).
-5. Client channel UI (desktop floating and mobile fixed buttons, F/G/V/R/C shortcuts per the `ChannelController` header, a new `Keybinds` action) and `ThreadVisualController` colours.
-6. `DataService` defaults (`ElementSkills`) and any `<Element>Tier` replication.
-7. A raw weave for the element: a WeaveConfig entry and an `Abilities/Raw<El>` module.
-8. `PowerChannel` ("two of every element"), `TimeChange` (one of each, unordered), and any UI that lists all elements (BookController, ScrapbookPanel; not traced).
+4. Client channel UI (desktop floating and mobile fixed buttons, F/G/V/R/C shortcuts per the `ChannelController` header, a new `Keybinds` action) and `ThreadVisualController` colours.
+5. `DataService` defaults (`ElementSkills`) and any `<Element>Tier` replication.
+6. A raw weave for the element: a WeaveConfig entry and an `Abilities/Raw<El>` module.
+7. `PowerChannel` ("two of every element"), `TimeChange` (one of each, unordered), and any UI that lists all elements (BookController, ScrapbookPanel; not traced).
 
 ### 10.5 Add a Warder skill node
 
@@ -483,14 +457,12 @@ A large change: every place below hard-codes the five elements.
 9. **`WarderGate` relies on naming.** Any attribute ending in `Active` (even a non-weave one, such as `StoneSoldierActive`) blocks Warder melee; a new weave that marks itself live under a different name is not seen.
 10. **Fireball rise/throw yields** inside `task.spawn`. Sessions use token checks (good), but `throwFireball` loads an animation on the server every throw (`:738-744`).
 11. **The mastery-gate notice text is duplicated** in three files (§10.1 step 9).
-12. **Custom weaving can go live.** `CustomWeaving.LiveCastingEnabled = true` and `DevelopmentOnly = false` are folder attributes. Access still requires the group rank and level 100, but the folder attribute is the kill switch.
-13. **Grep noise.** `ServerStorage` backups contain old copies of ability scripts (§9).
+12. **Grep noise.** `ServerStorage` backups contain old copies of ability scripts (§9).
 
 ## 12. Open questions
 
 - Does any client listener handle `FireballVisual("ThrowStart")`? Possibly `FireballWeaveShapeController`; not verified.
 - Is `InsectControlAction` really unused on the server, or connected some other way? Does InsectControl select targets wholly server-side?
-- Which DataService key holds the custom-weave library?
 - Is the linked ListeningWard → disabled BindingThreads quick-cast remap (`CircleIntegrationService:797-800`) a live bug?
 - What is the full validation in `RockThrowAction`, `RockBarrageAction`, `FireballBarrageAction`, `HealingAction`, `RawAirAction`, `RawWaterAction`, `RawEarthAction`, `PainInflictionAction`, `GrandShieldAction`, `AirPrisonAction` and `GuardianBond`? Only Fireball, AirBlades and Lightning were fully traced.
 - Is `WarderService` (V1) still in use, given that `WarderCombatService` (V2) exists and is admin-only?

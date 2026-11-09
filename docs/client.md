@@ -36,7 +36,7 @@ Every script is a `LocalScript` with `RunContext = Legacy` unless noted. "L" is 
 
 | Path | L | Responsibility | Key requires | Remotes / events |
 |---|---|---|---|---|
-| SPS/InputController | 895 | Central PC/gamepad/touch action map. Fires ActionBegan/ActionEnded, primary-action casting, mobile Channel/Confirm/Sprint buttons, gamepad router, floating-word navigation | InputActions, TouchUI, Keybinds, UiManager, SprintConfig, ControllerAim, MobileTapGate, ProjectileAimService, ControllerCursor | CastRequest, HealingAction, FoldedLightAction, SprintRequest, ChannelRequest, ListeningWardAction, FireHoldAction, `<Id>Action` (multi-throw); CE: ActionBegan, ActionEnded, ControllerElement, ControllerQuickSlot |
+| SPS/InputController | 891 | Central PC/gamepad/touch action map. Fires ActionBegan/ActionEnded, primary-action casting, mobile Channel/Confirm/Sprint buttons, gamepad router, floating-word navigation | InputActions, TouchUI, Keybinds, UiManager, SprintConfig, ControllerAim, MobileTapGate, ProjectileAimService, ControllerCursor | CastRequest, HealingAction, FoldedLightAction, SprintRequest, ChannelRequest, ListeningWardAction, FireHoldAction, `<Id>Action` (multi-throw); CE: ActionBegan, ActionEnded, ControllerElement, ControllerQuickSlot |
 | SPS/ChannelInputMode | 8 | Tells the server whether the player is on touch input | – | ChannelInputMode |
 | SPS/ControllerCursorController | 89 | Gamepad virtual cursor toggle | ControllerCursor, Keybinds | CombatStateRequest |
 | SPS/KeybindListController | 430 | Key hint list (`KeybindList` gui, desktop only): the pre-Round-1 (V1) vertical list in the bottom-right corner (`List` frame 220×260, anchored bottom-right at -16/-16, bottom-aligned, right-aligned `Guru` 15 px rows "Key — Action", 4 px gap, grey #cdcdcd, white while pressed), in register order (Shiftlock, Sprint, Tie, Channel, …; Guardian rows in the same column). Round 1's centred strip was reverted on the owner's word. Also the touch "tie weave" button and the `TiedWeaveWords` gui | ControllerAim, TouchUI, WarderGate, WarderSkillConfig, Keybinds, KeyLabel, WovenUI, WovenTheme | TiedWeaveAction |
@@ -87,7 +87,7 @@ Every script is a `LocalScript` with `RunContext = Legacy` unless noted. "L" is 
 
 | Path | L | Responsibility | Key requires | Remotes |
 |---|---|---|---|---|
-| SPS/ThreadVisualController | 3497 | Channel and ready threads for every caster (Add/Finalize/Release/Clear) in `Workspace.ActiveThreads` | ThreadStartFade, WeaveMotionConfig, ElementConfig, WeaveVisibility, ReadyThreadPaths, CustomWeavePreview, ChannelReadyHandoff | ThreadVisual; CE: ThreadHandChosen, ThreadVisualLocal |
+| SPS/ThreadVisualController | 3485 | Channel and ready threads for every caster (Add/Finalize/Release/Clear) in `Workspace.ActiveThreads` | ThreadStartFade, WeaveMotionConfig, ElementConfig, WeaveVisibility, ReadyThreadPaths, ChannelReadyHandoff | ThreadVisual; CE: ThreadHandChosen, ThreadVisualLocal |
 | SPS/WardVisualController | 1123 | Ward meshes and threads, hit impacts | ElementConfig, WeaveVisibility | WardVisual |
 | SPS/AirPushWeaveShapeController | 137 | Air Push shape threads (attribute-driven) | AirPushBodyPath, CasterActors, WeaveVisualOpacity, WeaveTrailTaper | – |
 | SPS/FireballWeaveShapeController | 202 | Fireball shape threads | CasterActors, FireballWeavePattern | FireballVisual (listens) |
@@ -146,7 +146,7 @@ Every script is a `LocalScript` with `RunContext = Legacy` unless noted. "L" is 
 | SPS/Controllers/PowerChannelShakeController | 306 | Power Channel shake | – |
 | SPS/Controllers/CircleScreenController / CircleAudioController / CircleVictimController | 189/50/75 | Circle screen effects, spatial audio, victim presentation | CircleEnvironment, CircleVictimFeedback |
 | SPS/Controllers/TempestCameraSway / TempestWeatherController | 40/62 | Tempest camera sway; the only Lighting blend owner during Tempest | – |
-| SPS/ChannelAnimationController | 734 | Channelling animations | IgniteCastApproved, QuickSlotAnimation |
+| SPS/ChannelAnimationController | 731 | Channelling animations | IgniteCastApproved, QuickSlotAnimation |
 | SPS/Controllers/{Drowning,PowerChannel,RockThrow,RockBarrage,Fireball,InsectControl,Lightning,SpiritStun,RawWater,RawEarth,Circle,FlowingWeave}AnimationController | 39–223 | Per-ability animations (some upper-body procedural) | `<Ability>Animation` etc. |
 | SPS/BrokenLegAnimationController | 67 | Broken-leg limp | – |
 | SPS/RagdollStateController | 144 | Ragdoll state presentation | – |
@@ -160,7 +160,7 @@ Every script is a `LocalScript` with `RunContext = Legacy` unless noted. "L" is 
 | StarterGui/TopHUD/TopHUDController | 362 | Top bar: avatar, XP bar, Book/Settings/Map/Marks slots, hide toggle, PC hotkeys for Marks/Settings/HideHUD. Round 1 (`:276-362`): `Bar.BookSlot.SkillPointBadge` (`SkillPoints`, hidden at 0) and `Bar.InfoLine` (`Marks` attribute only; hidden while it is unset). The village clock moved to MinimapController on 2026-11-09; V1 bar unchanged. | – |
 | SPS/Controllers/GuiEnableController | 11 | Enables `MainHUD`, `GuardianBondHUD` and `WarderShowcaseHUD` (only these, by name) when they reach PlayerGui with `EnabledInPlay`; no script toggles them, and they are authored disabled so the Edit viewport stays clear. | – |
 | SPS/Controllers/StaminaUIController | 69 | `StaminaGui` bar on touch. Desktop (Round 1): keeps `StaminaGui.Enabled = false`; stamina shows in the vitals plate. | – |
-| SPS/Controllers/BookController (+ ScrapbookPanel module, 660) | 944 | `NewBookHUD`: Basics/Weaves/Skills/Titles/Settings, key rebinding. The Skills tab shows unspent SkillPoints in a pill (authored `NewBookHUD.BookMenuFrame.TabColumn.SkillsTab.Inner.Points`), hidden at 0 like the TopHUD badge. | PlayerSettings (RF), TitlesRequest, TitlesChanged, ChooseElementAlignment, ChangeElementAlignment, ElementSkillPurchase, WarderSkillPurchase, BookReading |
+| SPS/Controllers/BookController (+ ScrapbookPanel module, 660) | 919 | `NewBookHUD`: Basics/Weaves/Skills/Titles/Settings, key rebinding. The Skills tab shows unspent SkillPoints in a pill (authored `NewBookHUD.BookMenuFrame.TabColumn.SkillsTab.Inner.Points`), hidden at 0 like the TopHUD badge. | PlayerSettings (RF), TitlesRequest, TitlesChanged, ChooseElementAlignment, ChangeElementAlignment, ElementSkillPurchase, WarderSkillPurchase, BookReading |
 | SPS/Controllers/EconomyController | 587 | Marks and factions menu (`MarksAndFactionsHUD`), gifts | EconomyRequest, EconomyNotice, EconomyChanged, GiftRequest, GiftNotice, EconomyReady |
 | SPS/MarksShopClient | 254 | `ShopHUD` shop | MarksShopRequest, MarksShopNotice |
 | SPS/Controllers/MinimapController | 889 | `MinimapHUD` and `MapHUD`. Round 1: on desktop the minimap column sits top-right (board: right 32, top 20 of 1600x900, clock first; below the top bar if core buttons sit on its right); touch keeps it under the chat bar; nothing else changed. Clock (2026-11-09): `MinimapHUD.Clock`, a pill with the village clock (`DayNightEpoch` + DayNightConfig + `TimeChangeOffset`, else `Lighting.ClockTime`; updated every second) at the minimap's top, centred on its column; the minimap sits 4 px below it (desktop and touch). The clock stays shown when the minimap hides (`Setting_MinimapAlwaysOn` off, no map area) and hides only while `blocked()`. `MinimapBottom` uses the clock's bottom when the minimap is hidden. | MapDiscovery, FactionWarVisual, GuardianBond |
@@ -197,7 +197,6 @@ Every script is a `LocalScript` with `RunContext = Legacy` unless noted. "L" is 
 | SPS/AdminFlightController | 180 | Admin flight | FireServer (remote name not caught) |
 | SPS/TrollocDebugOverlay | 51 | AI labels while `TrollocDebug` is set | – |
 | SPS/Controllers/WarderTestController | 1661 | Warder Combat Test V2: whole Guardian HUD swap, prediction | WarderTestRequest |
-| SPS/Controllers/CustomWeaveTestVFX | 6 | Comment only, no code | – |
 
 ### 2.8 NPC and world
 
@@ -412,10 +411,10 @@ Every client draws every caster's weave VFX locally. The server sends events or 
 - `MainHUD.XPContainer` LevelText/XPBackground/XPText: hidden by XPUIController (Round 1) and TopHUDController:104-107. XPUIController still writes to them; only the popups matter. Keep the instances: both scripts `WaitForChild` them.
 - `CircleControllerInvite` (runtime gui of CircleController, always disabled since invites moved to SetCore): removed in Round 1; the invite is a Social toast.
 - Quick-slot bars: QuickSlotHUD is the live channeler bar, WarderQuickSlotHUD the live Guardian bar (swapped in by WarderTestController), NewQuickSlot is dead.
+- Custom weaving: removed 2026-11-09 (server folder, remote, Shared book and Loom modules). Backup in `ServerStorage/MCPBackups/RemoveCustomWeaving_20261109_Before`; the saved library field stays in saves, unread. Saved quick slots holding a `Custom:` id are cleared to empty on load.
 
 **Stale or empty:**
 
-- `SPS/Controllers/CustomWeaveTestVFX`: comment only.
 - `SPS/CameraController`: now only a 27-line forwarder. Shiftlock's header (`:5`) says CameraController is disabled; it is not.
 - ThreadVisualController's header claims "thread actor pooling"; there is no pool (actors are cloned at `:399/:440` and destroyed with `task.delay` at `:701`).
 - InputController has empty "Device debugging" `if` blocks.

@@ -21,7 +21,7 @@ flowchart TB
   subgraph Server["ServerScriptService"]
     EP["Entry points<br/>ServerMain (legacy), ServerBootstrap (newer)"]
     SVC["Server/Services (~145)<br/>data, combat, channel, mana, circles,<br/>economy, admin, NPCs, Trollocs"]
-    AB["Server/Abilities (46), CustomWeaving (17)"]
+    AB["Server/Abilities (46)"]
     TOP["Feature scripts<br/>PlayEntryServer, EconomyServer, GiftServer, ..."]
   end
   WS["Workspace<br/>map regions, named anchors, runtime folders"]
@@ -43,7 +43,7 @@ flowchart TB
 |---|---|---|---|
 | Entry flow | `ReplicatedFirst`, `ServerScriptService/PlayEntryServer`, `Services/SaveSlotService`, `Services/FirstJourneyService` | Loading screen, menu, save pick, tutorial gate, spawn | [shared.md §4](shared.md) |
 | Server core | `ServerScriptService` | Authority for all gameplay state, persistence, economy, NPCs | [server.md](server.md) |
-| Ability system | `Server/Abilities`, `Server/CustomWeaving`, channel/ability/circle services | Channeling, weaves, casts, circles, wards | [abilities.md](abilities.md) |
+| Ability system | `Server/Abilities`, channel/ability/circle services | Channeling, weaves, casts, circles, wards | [abilities.md](abilities.md) |
 | Shared | `ReplicatedStorage` | Remotes, client bus, configs, helpers, assets | [shared.md](shared.md) |
 | Client | `StarterPlayer`, `StarterGui` | Input, presentation, HUD; no authority | [client.md](client.md) |
 | World | `Workspace`, `Lighting`, `ServerStorage` | Map, anchors code looks up, NPC assets | [world.md](world.md) |
@@ -60,7 +60,7 @@ flowchart LR
     A1["require ~20 core services"] --> A2["CircleIntegrationService.Install()<br/>wraps Channel/Mana/Damage"] --> A3["Start(): Combat, DamageModifier, Circle,<br/>CircleWeave, Channel, Mana, Progression,<br/>Damage, Affinity, Ability, Sprint, Ragdoll,<br/>LearnedWeave, AbilityOwnership, QuickSlot,<br/>MovementRestriction, MovementState"] --> A4["SaveSlotService, GuardianBondService"] --> A5["PlayerAdded load loop,<br/>PlayerRemoving, BindToClose"]
   end
   subgraph SB["ServerBootstrap (newer, parallel)"]
-    B1["each block: task.spawn + xpcall<br/>PlayerProtection, MovementState, CustomWeaving,<br/>Trollocs, VillageNPC, Guard, HeldWard,<br/>Admin → WarderCombat → WarderSkill,<br/>ElementSkill, SpiritTechnique, RawWater,<br/>Silence, StatusDuration, QuickProtect"]
+    B1["each block: task.spawn + xpcall<br/>PlayerProtection, MovementState,<br/>Trollocs, VillageNPC, Guard, HeldWard,<br/>Admin → WarderCombat → WarderSkill,<br/>ElementSkill, SpiritTechnique, RawWater,<br/>Silence, StatusDuration, QuickProtect"]
   end
 ```
 

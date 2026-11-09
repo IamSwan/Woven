@@ -15,7 +15,7 @@ Related docs: [server.md](server.md) (server validation of each remote), [abilit
 | Short | Full |
 |---|---|
 | `SSS/` | `ServerScriptService/` (scripts directly under it, e.g. PlayEntryServer, PlayerSettingsServer, MapDiscoveryServer, BookPresentationServer, WaygateServer, HealthManager, ServerBootstrap) |
-| `SSS/Server/` | `ServerScriptService/Server/` (ServerMain, MarksShopServer, InnTeleport, InnResidents, ActiveAbilityBridge, Services, Abilities, CustomWeaving…) |
+| `SSS/Server/` | `ServerScriptService/Server/` (ServerMain, MarksShopServer, InnTeleport, InnResidents, ActiveAbilityBridge, Services, Abilities…) |
 | `SPS/` | `StarterPlayer/StarterPlayerScripts/` |
 | `SPS/C/` | `StarterPlayer/StarterPlayerScripts/Controllers/` |
 | `Shared/` | `ReplicatedStorage/Shared/` |
@@ -97,13 +97,12 @@ Columns: **Dir** is the direction (C→S, S→C, or both). **Fired by** and **Ha
 | `Remotes/ThreadVisual` | RemoteEvent | S→C | VFX in `ChannelService:198`,`:245`,`:335`,`:459`…; `CircleService:71`,`:98`,`:113`; `AbilityService`; `CircleIntegrationService`; `GrandShield:268`,`:622`; `GuardianBondTest:65`,`:71`,`:79` [43] | `SPS/ThreadVisualController:3431`; `SPS/C/WovenFeedbackController:256` | `(action: "Add"\|"Finalize"\|"Clear"…, character, element?, index?)` |
 | `Remotes/AbilityEffects` | RemoteEvent | S→C | VFX `AbilityService:467` | `SPS/AbilitySoundController:463` | `(action, character, abilityId, value)` |
 | `Remotes/ScreenShake` | RemoteEvent | S→C | CT `SSS/Server/Shared/ScreenShakeService:44`,`:82`,`:110`,`:137`; CT `SSS/Server/Abilities/Healing:596`,`:601`; CT `SSS/Server/Abilities/InsectControl:408`,`:475`,`:476` | `SPS/C/ScreenShakeController:353` | `(action: "Cast"\|"StartHeld"\|"StopHeld"\|"StopAllHeld", presetName)` |
-| `Remotes/CircleReworkVisual` | RemoteEvent | S→C | `ChannelService:433`,`:437`,`:539`,`:543`; `AbilityService:1040`,`:1044`; `QuickSlotService:669`; `CircleAbilityRuntime:59`; `PlayerProtectionService:48`,`:60`; `Abilities/SpiritStun:43`; `Lightning:797`,`:810`; `Tornado:43`,`:54`; `ConvergingFlame:22`; `Tempest:65`; `CustomWeaving/ExperimentService:73`,`:139` [26] | `SPS/C/CircleReworkController:48` | `("Notice", title, text)`; the de facto general toast channel |
-| `Remotes/QuickSlotAssign` | RemoteEvent | C→S | `SPS/C/BookController:361`; `Shared/ExperimentBookPage:87` | `SSS/Server/Services/QuickSlotService:891` | `(weaveId, slot)` |
+| `Remotes/CircleReworkVisual` | RemoteEvent | S→C | `ChannelService:433`,`:437`,`:539`,`:543`; `AbilityService:1040`,`:1044`; `QuickSlotService:669`; `CircleAbilityRuntime:59`; `PlayerProtectionService:48`,`:60`; `Abilities/SpiritStun:43`; `Lightning:797`,`:810`; `Tornado:43`,`:54`; `ConvergingFlame:22`; `Tempest:65` [24] | `SPS/C/CircleReworkController:48` | `("Notice", title, text)`; the de facto general toast channel |
+| `Remotes/QuickSlotAssign` | RemoteEvent | C→S | `SPS/C/BookController:361` | `SSS/Server/Services/QuickSlotService:891` | `(weaveId, slot)` |
 | `Remotes/QuickSlotUse` | RemoteEvent | C→S | `SPS/C/QuickSlotController:129` | `QuickSlotService:892` | `(slot, aimPosition, ...)` |
 | `Remotes/QuickSlotSwitch` | RemoteEvent | C→S | `SPS/C/QuickSlotController:289`,`:315` | `QuickSlotService:835` | `()` or `("Shortcut")` |
 | `Remotes/QuickSlotCooldown` | RemoteEvent | S→C | `QuickSlotService:439`,`:457`,`:781`,`:903` | `SPS/C/QuickSlotController:191` | `(abilityId, seconds)` |
 | `Remotes/QuickSlotAnimation` (RT, `QuickSlotService:41`) | RemoteEvent | S→C | `QuickSlotService:554`,`:626` | `SPS/ChannelAnimationController:636` | `(abilityId)` |
-| `Remotes/CustomWeaveExperiment` | RemoteEvent | both | C: `Shared/ExperimentBookPage:32`,`:56`,`:77`,`:86`,`:110`,`:111`,`:139`,`:144`,`:147`. S: `SSS/Server/CustomWeaving/ExperimentService:50`,`:108`,`:115`,`:140`,`:146`,`:151`,`:155`,`:159`,`:163`,`:191` | S: `ExperimentService:111`. C: `Shared/ExperimentBookPage:152` | `(action, token, request)` / `(action, payload)` |
 
 ### 2.5 Weave and ability remotes
 
@@ -220,7 +219,7 @@ Client scripts also create BindableEvents at runtime: `ToggleShop` (`SPS/MarksSh
 | `MapConfig` | Minimap areas (image, origin, size, fog grid ≤32). One area now: `EmondsField` (`:7-17`) | both: MinimapController, MapDiscoveryServer | |
 | `DayNightConfig` | 24-minute day (`DaySeconds=1440`, `StartClock=16.6`) and lighting grades (`:3`) | both: DayNightService, TimeChange, TempestWeatherController | |
 | `SoundConfig` | Sound ids per system | both: AbilitySoundController, MenuShowcase, FireDrawing, RawAir, Stilling, HeldWardService, WeaveAudio, RawFireRuntime | |
-| `AnimationConfig` | Animation ids for channeling and casts | both: ChannelAnimationController, MenuShowcase, CastMotion, CompulsionService, SpiritTechniqueService, GuardianBondTest | |
+| `AnimationConfig` | Animation ids for channeling and casts | both: ChannelAnimationController, MenuShowcase, CompulsionService, SpiritTechniqueService, GuardianBondTest | |
 | `TitlesConfig` | Title definitions, colors, order, auto-grants | both: BookController, ScrapbookPanel, TitlesService, AdminService, PlayerNametags; M: AdminAutocompleteConfig | |
 | `MarksShopConfig` | Marks shop prices; faction-war zone timings (`:4-9`) | both: MarksShopClient, MarksShopService, FactionService, FactionWarService, TitlesService | Zone timings live in a "shop" config |
 | `VillageTeachingConfig` | Teachers: ExcludedWeaves, spawn counts, delays | S: VillageTeachers, VillageNPCService | |
@@ -260,7 +259,6 @@ Client scripts also create BindableEvents at runtime: `ToggleShop` (`SPS/MarksSh
 | `ScreenEffectLayout` | `Fullscreen(gui)`: ignore inset and safe areas for combat overlays (`:6-10`) | C (9) |
 | `SaveReady` | `Connect(fn)` runs when `SessionDataReady` turns true again after Back to Main Menu; the first save of a join is skipped (`:9-18`) | C: BookController, EconomyController, MarksShopClient |
 | `JournalArt` | Journal palette and frame builders | **none** (dead) |
-| `ExperimentBookPage`, `WeaveLoomPage`, `WeaveLoom`, `CustomWeaveLabels`, `CustomWeavePreview`, `CustomWeaveMotion` | Custom-weave book page and its presentation | C: BookController, ThreadVisualController; S: LibraryService, CastMotion |
 | `RawElementOptions` | Element option picker wiring | C (3) |
 
 ### 3.4 Visuals and presentation (client-only unless noted)

@@ -125,15 +125,6 @@ Keep this file current: when a system's owner scripts change, update its entry i
 - **World:** `Workspace/WardZones`
 - **Doc:** [abilities.md §2](abilities.md)
 
-## Custom weaving
-
-- **Server:** `Server/CustomWeaving/*`
-- **Client:** `Controllers/BookController` (experiment page), `SPS/ThreadVisualController` (preview)
-- **Shared:** `Shared/ExperimentBookPage`, `Shared/WeaveLoom`, `Shared/WeaveLoomPage`, `Shared/CustomWeavePreview`, `Shared/CustomWeaveMotion`, `Shared/CustomWeaveLabels`
-- **Remotes:** `CustomWeaveExperiment`
-- **Data:** custom-weave library in the profile; folder attributes `LiveCastingEnabled`, `DevelopmentOnly`
-- **Doc:** [abilities.md §2, §3.4](abilities.md)
-
 ## Stilling, Silence, Compulsion and status effects
 
 - **Server:** `Services/StillingService`, `Abilities/CircleAbilities/Stilling`, `Services/SilenceService`, `Services/StatusDurationService`, `Services/CompulsionService`, `Services/SpiritTechniqueService`, `Services/ShieldingContestService`, `Services/ContestInputGuard`, `Server/VoluntaryReset`

@@ -96,6 +96,8 @@ Woven is a Roblox action RPG (Studio title "[WARDERS] Woven", PlaceId 1031405489
 - Check in Edit mode only: the script compiles, the Output log is clean, and the existing self-checks pass:
   - `require(game.ServerScriptService.Server.Services.LevelRules.SelfCheck)()`
   - `require(game.ServerScriptService.Server.Services.SaveSession.SelfCheck)()`
+  - `require(game.ReplicatedStorage.Shared.WovenUI.SelfCheck)()`
+  - `require(game.ServerScriptService.Server.Services.WeaveStatsService.SelfCheck)()`
 - Read back the lines you changed.
 - No Play sessions, captures or timed runs unless the owner asks for them. The owner tests by hand in Play.
 

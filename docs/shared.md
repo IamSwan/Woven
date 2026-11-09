@@ -42,7 +42,7 @@ Columns: **Dir** is the direction (C→S, S→C, or both). **Fired by** and **Ha
 | Remote | Type | Dir | Fired by | Handled by | Payload |
 |---|---|---|---|---|---|
 | `Remotes/PlayEntry` | RemoteEvent | both | C: `RF/PlayEntryClient:414` ("Play"), `SPS/C/BookController:807` ("Menu"). S: `SSS/PlayEntryServer:81` (MenuRefused), `:104` (Menu), `:128`,`:136` (Started), `:129`,`:139` (Retry) | S: `SSS/PlayEntryServer:125`. C: `RF/PlayEntryClient:423` (Started/Retry), `:544` (Menu/MenuRefused) | C→S `(action: "Play"\|"Menu")`; S→C `(action, message?)` |
-| `Remotes/SaveSlot` | RemoteFunction | C→S | `RF/PlayEntryClient:332` ("Choose", slot, class), `:360` ("List"), `:370` ("Buy") | `SSS/Server/Services/SaveSlotService:69` | `List`→`{Saves, Owned, Max, Price, LastSlot}`; `Choose`→`true` or `false, msg`; `Buy`→bool |
+| `Remotes/SaveSlot` | RemoteFunction | C→S | `RF/PlayEntryClient:332` ("Choose", slot, class), `:360` ("List"), `:370` ("Buy") | `SSS/Server/Services/SaveSlotService:69` | `List`→`{Saves, Owned, Max, Price, LastSlot}`; each `Saves[i]` = `{Exists, Level, Class, Kills, LastPlayed?, Marks, Title?}` (`DataService.PeekSlots`; `Title` = that save's equipped title display name, nil when none); `Choose`→`true` or `false, msg`; `Buy`→bool |
 | `Remotes/FirstJourney` (RT, `FirstJourneyService:37`) | RemoteEvent | both | C: `RF/FirstJourneyClient:284` Retry, `:292` Skip, `:294` Begin, `:322` Finish, `:367` Sync; `SPS/C/BookController:271` StartFromBook. S: `SSS/Server/Services/FirstJourneyService:138`,`:148` (Step), `:425`,`:428` (Notice) | S: `FirstJourneyService:416`. C: `RF/FirstJourneyClient:347` | C→S `(action)`; S→C `("Step", payload{Step,Total,Title,Text,Recipe,Kind,Kills,QuickSlot,WardRaised,Done,Focus,Welcome,Complete})` or `("Notice", text)` |
 | `Remotes/ChooseElementAlignment` (RT, `ElementSkillService:179`) | RemoteFunction | C→S | `RF/FirstJourneyClient:212`, `SPS/C/BookController:449`, `SPS/C/BookController/ScrapbookPanel:287` | `SSS/Server/Services/ElementSkillService:181` | `(element)` → `ok, message` |
 | `Remotes/ChangeElementAlignment` (RT, `:214`) | RemoteFunction | C→S | `SPS/C/BookController:506`, `ScrapbookPanel:316` | `ElementSkillService:216` | `(element)` → `ok, message` |
@@ -111,7 +111,7 @@ Kept short here; validation details are in [abilities.md §5](abilities.md).
 
 | Remote | Type | Dir | Fired by | Handled by | Payload |
 |---|---|---|---|---|---|
-| `AirBladesAction` (RT) | RE | C→S | `SPS/C/AirBladesController:68`,`:88` | `SSS/Server/Abilities/AirBlades:1195` | `(aim, clicked, "All"?)` |
+| `AirBladesAction` (RT) | RE | C→S | `SPS/C/AirBladesController:68`,`:88` | `SSS/Server/Abilities/AirBlades:1136` | `(aim, clicked, "All"?)` |
 | `AirPushVisual` | RE | S→C | VFX `AbilityService:631` | `SPS/C/AirPushVisualController:16`, `SPS/AirPushWeaveShapeController:78`; `SPS/AirPushCastThreadController:51` (disabled) | `(start, end, dir, impacts)` |
 | `AirSlashThreadRelease` | RE | S→C | VFX `Abilities/AirSlash:23` | only `SPS/AirSlashWeaveTrailController:24` (disabled) | `(char, blade)` |
 | `AirPrisonAction` (RT) | RE | C→S | `SPS/C/AirPrisonController:649` | `Abilities/CircleAbilities/AirPrison:505` | `("Release")` |
@@ -132,11 +132,11 @@ Kept short here; validation details are in [abilities.md §5](abilities.md).
 | `DrowningVisual` | RE | S→C | VFX `Abilities/Drowning:206`,`:224`,`:236`,`:385` | `SPS/C/DrowningVisualController:19`, `DrowningFeedbackController:152` | `(action, v1, v2)` |
 | `DrowningCastApproved` | RE | S→C | CT `Abilities/Drowning:504` | `SPS/C/DrowningAnimationController:95` | `()` |
 | `DrowningRelease` | RE | C→S | `SPS/C/DrowningAnimationController:90` | `Abilities/Drowning:537` | `()` |
-| `FireballAction` (RT) | RE | C→S | `SPS/C/FireballController:56` | `Abilities/Fireball:1196` | `(aim, clicked)` |
+| `FireballAction` (RT) | RE | C→S | `SPS/C/FireballController:56` | `Abilities/Fireball:1162` | `(aim, clicked)` |
 | `FireballBarrageAction` | RE | C→S | `SPS/C/FireballBarrageController:56` | `Abilities/FireballBarrage:825` | `(aim, clicked)` |
-| `FireballVisual` (RT, created by two scripts) | RE | S→C | VFX `Fireball:558`,`:745`,`:750`,`:1021`; FireballBarrage | `SPS/C/FireballVisualController:14`, `SPS/FireballWeaveShapeController:48` | `(action, arg1, arg2)` |
+| `FireballVisual` (RT, created by two scripts) | RE | S→C | VFX `Fireball:524`,`:711`,`:716`,`:987`; FireballBarrage | `SPS/C/FireballVisualController:14`, `SPS/FireballWeaveShapeController:48` | `(action, arg1, arg2)` |
 | `FireballAnimation` (RT) | RE | S→C | **never fired** | `SPS/C/FireballAnimationController:109` | n/a |
-| `FireballFeedback` (RT) | RE | S→C | `Fireball:524`,`:748`; `FireballBarrage:488`,`:538` | `SPS/C/FireballFeedbackController:166` | `(action)` |
+| `FireballFeedback` (RT) | RE | S→C | `Fireball:490`,`:714`; `FireballBarrage:488`,`:538` | `SPS/C/FireballFeedbackController:166` | `(action)` |
 | `FireballImpactVisual` | RE | S→C | VFX `Services/ImportedFireballService:65` | `SPS/C/FireballImpactController:52` | `(pos, normal, player)` |
 | `FireDrawingAction` (RT) | RE | both | C: `SPS/C/FireDrawingController` [13]. S: `Services/RawFireRuntime:14` | S: `Abilities/FireDrawing:1021`. C: `FireDrawingController:222` | C→S `(cmd, pos)`; S→C `("Notice", text)` |
 | `FireHoldAction` | RE | C→S | `SPS/InputController:524`; `SPS/C/FireHoldController:50` | `Abilities/FireHold:223` | `(action)` |
@@ -173,11 +173,11 @@ Kept short here; validation details are in [abilities.md §5](abilities.md).
 | `RawWaterAction` | RE | both | C: `SPS/C/RawWaterController:26`. S: `Abilities/RawWater:24` | S: `RawWater:485`. C: `RawWaterController:149` | `(name, table)` / `("Notice", msg)` |
 | `RawWaterVisual` | RE | S→C | VFX `Services/RawWaterFormationService:565`,`:720` | **no listener found** | n/a |
 | `RawWaterSplash` (RT) | RE | S→C | VFX `RawWater:87` | `SPS/C/RawWaterVisualController:5` | `(pos, normal)` |
-| `RockThrowAction` | RE | C→S | `SPS/C/RockThrowController:56` | `Abilities/RockThrow:1252` | `(aim, clicked)` |
-| `RockThrowVisual` | RE | S→C | VFX `RockThrow:341`,`:594`,`:862`,`:908`… [10] | `SPS/C/RockThrowVisualController:18` | `(action, rock, index)` |
-| `RockThrowFeedback` | RE | S→C | `RockThrow:390`,`:578`,`:845`,`:906`,`:1067`; `RockBarrage:506`,`:594`,`:683`,`:792`,`:963` | `SPS/C/RockThrowFeedbackController:37`, `RockThrowAnimationController:78`, `RockThrowSoundController:70` | `(action, rockIndex)` |
-| `RockBarrageAction` (RT) | RE | C→S | `SPS/C/RockBarrageController:60` | `RockBarrage:1152` | `(aim, clicked)` |
-| `RockBarrageAnimation` (RT) | RE | S→C | `RockBarrage:596`,`:794` | `SPS/C/RockBarrageAnimationController:183` | `("Interrupted"\|"Throw")` |
+| `RockThrowAction` | RE | C→S | `SPS/C/RockThrowController:56` | `Abilities/RockThrow:1229` | `(aim, clicked)` |
+| `RockThrowVisual` | RE | S→C | VFX `RockThrow:318`,`:571`,`:839`,`:885`… [10] | `SPS/C/RockThrowVisualController:18` | `(action, rock, index)` |
+| `RockThrowFeedback` | RE | S→C | `RockThrow:367`,`:555`,`:822`,`:883`,`:1044`; `RockBarrage:466`,`:554`,`:643`,`:752`,`:923` | `SPS/C/RockThrowFeedbackController:37`, `RockThrowAnimationController:78`, `RockThrowSoundController:70` | `(action, rockIndex)` |
+| `RockBarrageAction` (RT) | RE | C→S | `SPS/C/RockBarrageController:60` | `RockBarrage:1112` | `(aim, clicked)` |
+| `RockBarrageAnimation` (RT) | RE | S→C | `RockBarrage:556`,`:754` | `SPS/C/RockBarrageAnimationController:183` | `("Interrupted"\|"Throw")` |
 | `ShieldingContest` | RE | both | C: `SPS/C/ShieldingContestController:46` (≤120 Hz). S: `Services/ShieldingContestService:22`,`:24`,`:34`,`:36`,`:50` | S: `ShieldingContestService:41`. C: `ShieldingContestController:28`,`:66` | C→S `(token)`; S→C `(action, token, a, b)` |
 | `SilenceVisual` | RE | S→C | VFX `Abilities/Silence:26`,`:58` | `SPS/C/SilenceVisualController:38` | `(event, token, caster, target, at)` |
 | `SoloWeaveFeedback` (RT, `SoloWeaveRuntime:19`) | RE | S→C | `R.Remote:FireClient` in `Abilities/AirSlash:64`, `Abilities/Tornado:133` | `SPS/C/SoloWeaveController:190` | `(event, position?)` |
@@ -252,6 +252,9 @@ Client scripts also create BindableEvents at runtime: `ToggleShop` (`SPS/MarksSh
 | `UiManager` | `Register(id,{isOpen,open,close})`; `Toggle(id)` closes the others first (`:8-26`) | C: BookController, EconomyController, MinimapController, MarksShopClient, InputController, `StarterGui/TopHUD/TopHUDController`; SettingsController (disabled) |
 | `ButtonTemplateView` | Parchment button factory (Fondamento font, ink colors, strip images); creates a `Closed` BindableEvent (`:5-10`, `:119`) | C: EconomyController; SettingsController (disabled) |
 | `TopButtonTheme` | Top-bar button style and `Y()` from `GuiService.TopbarInset` (`:3-17`) | C: AdminController, EconomyController, ElementSkillController, MinimapController, MobileHUDLayoutController; SettingsController (disabled) |
+| `WovenTheme` | Tokens of the redesign: colours, resource and element hues, fonts, min text 12/14 px, 44 px touch target, panel and strip images with slices. `TextMin()` returns 14 on touch; `TouchOverride` is a test hook. Image native sizes are estimated (512 px long side) | M: WovenUI; no screen yet |
+| `WovenUI` | Component kit of the redesign, per `docs/ui-kit` "Target design": Panel (paper/silver), Button (red/grey/purple/danger/plain), CloseButton, Tabs with badge, Bar (trail, cost preview, burnout shortfall), Slot (ready, weaveReady, cooldown sweep, noMana, suppressed, empty), StatusIcon, Toast, Tooltip, ConfirmDialog, Glyph, Label. Each is `(props, parent) -> (instance, api)`. Has `WovenUI.SelfCheck` (80 checks, desktop and touch) | no screen yet; M: WovenTheme, WovenGlyphs |
+| `WovenGlyphs` | Rects of each glyph in the uploaded glyph sheet (`SheetId` 0 until uploaded; `WovenUI.Glyph` draws nothing while 0). Generated from `tools/ui-kit/glyphs` | M: WovenUI |
 | `ScreenEffectLayout` | `Fullscreen(gui)`: ignore inset and safe areas for combat overlays (`:6-10`) | C (9) |
 | `SaveReady` | `Connect(fn)` runs when `SessionDataReady` turns true again after Back to Main Menu; the first save of a join is skipped (`:9-18`) | C: BookController, EconomyController, MarksShopClient |
 | `JournalArt` | Journal palette and frame builders | **none** (dead) |
@@ -289,6 +292,7 @@ Client scripts also create BindableEvents at runtime: `ToggleShop` (`SPS/MarksSh
 - `ReplicatedStorage/Assets` (35,770 descendants):
   - `ThreadActors`, `AbilityEffects` (1,930 descendants; read by many visual controllers and MenuShowcase), `CircleAudio`, `Tempest`, `Animations` (1,829), `StoneSoldierRig`, `OpenBook`, `Trolloc` (contains an `AnimateScript` with a `PlayEmote` BindableFunction), `WarderSword`.
   - `WarderDashClips` (888), `WarderJumpDashClips` (2,112), `WarderSwordFormClips` (27,553), `WarderAirSlashClip` (a KeyframeSequence). The Warder clip folders are KeyframeSequence trees and make up most of the replicated weight.
+- `ReplicatedStorage/WeaveStats` (built at runtime by `Services/WeaveStatsService`; read-only for clients): folder attributes `ThreadCap`, `BurnoutBaseMultiplier`; one Configuration per weave id (every WeaveInfoConfig id that is also a WeaveConfig weave) with `ManaCost` (only when the cost is fixed), `ReadyWindow` (seconds, when the weave has one), `GateElement`/`GateTier` (when gated). Built once at server start; a missing attribute means no fixed value.
 - Session and scene folders (replicate session state through instances and attributes instead of remotes):
   - `FireHoldSessions`: written by `SSS/Server/Abilities/FireHold:50`, read by `SPS/FireHoldVisualController:11`. Empty at edit time.
   - `RawFireSessions`: created by the server if missing (`Services/RawFireRuntime:11-12`); read by `SPS/C/RawFireThreadController:11`.
@@ -331,7 +335,7 @@ Client scripts also create BindableEvents at runtime: `ToggleShop` (`SPS/MarksSh
    - streaming done (`RequestStreamAroundAsync` twice, `:444-451`);
    - art preloaded;
    - `Showcase.Ready`, or 8 seconds passed.
-9. The menu reveals and, with slots on, `mountCards` runs (`:533-534`). It calls `SaveSlot:InvokeServer("List")`. The server waits for any closing save, then returns `{Saves, Owned, Max, Price, LastSlot}` (`SaveSlotService:73-81`).
+9. The menu reveals and, with slots on, `mountCards` runs (`:533-534`). It calls `SaveSlot:InvokeServer("List")`. The server waits for any closing save, then returns `{Saves, Owned, Max, Price, LastSlot}` (`SaveSlotService:73-81`). Each save in `Saves` carries `Title`, its equipped title display name (nil when none; `DataService.PeekSlots`).
 
 **Save pick**
 
@@ -374,7 +378,7 @@ Client scripts also create BindableEvents at runtime: `ToggleShop` (`SPS/MarksSh
 
 **Back to Main Menu**
 
-18. `SPS/C/BookController:807` sends `PlayEntry:FireServer("Menu")`. `PlayEntryServer.menu` (`:82-105`) refuses when the tutorial is active, the save is unloading or the player is busy, the player has not entered the world or the save is not ready, or less than 3 s passed since the last request. Otherwise it sets `EnteredWorld=false` and calls `DataService.Unload`, which saves and clears `SaveSlot`, `SessionDataReady` and `SaveClass` (`DataService:859`, `:886`). It destroys the character, re-runs `menuScreen` and fires "Menu". The client runs `showMenu(false)` (`PlayEntryClient:545`). ServerMain's loop waits for the next pick (`:76`). When the next save opens, client caches reset through `Shared/SaveReady`.
+18. `SPS/C/BookController:807` sends `PlayEntry:FireServer("Menu")`. `PlayEntryServer.menu` (`:82-105`) refuses when the tutorial is active, the save is unloading or the player is busy, the player has not entered the world or the save is not ready, or less than 3 s passed since the last request. Otherwise it sets `EnteredWorld=false` and calls `DataService.Unload`, which saves and clears `SaveSlot`, `SessionDataReady` and `SaveClass` (`DataService:863`, `:890`). It destroys the character, re-runs `menuScreen` and fires "Menu". The client runs `showMenu(false)` (`PlayEntryClient:545`). ServerMain's loop waits for the next pick (`:76`). When the next save opens, client caches reset through `Shared/SaveReady`.
 
 **Death and void**
 

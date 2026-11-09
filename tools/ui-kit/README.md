@@ -17,6 +17,7 @@ The export is read-only. It changes nothing in the place and needs no Play sessi
 | `tools/ui-kit/docs.mjs` | Reads the UI map in `docs/client.md` §5 (owner, status, runtime-built guis). |
 | `tools/ui-kit/build.mjs` | Builds the page from `ui.json`: downloads missing images, writes tinted copies, embeds fonts, derives tokens. |
 | `tools/ui-kit/target.html` | Target design boards (HTML fragment, CSS scoped under the target wrapper). build.mjs inlines it as part 1 of the page. Paths are relative to docs/ui-kit/. |
+| `tools/ui-kit/glyphs/` | `build-glyphs.mjs` renders every SVG glyph of target.html, white on transparent in 64 px cells, into `woven-glyphs.png` (to upload) and `woven-glyphs.luau` (the WovenGlyphs table); `preview.html` shows them. |
 | `tools/ui-kit/renderer.js`, `page.js` | Browser code that build.mjs inlines into the page (layout renderer and page controls). |
 | `docs/ui-kit/data/ui.json` | Raw export. |
 | `docs/ui-kit/assets/` | `studio/<assetId>.png` exact pixels read in Studio, `<assetId>.png` public thumbnails, `tint/<id>_<hex>.png`, `images.json` (manifest: source, sha256, placeholder flag), `fonts.css` (Roblox fonts as data URIs), `book-spread.png` (the Book art, studio/118181077777367 cropped, two-column rules removed from the left page). |
@@ -98,8 +99,8 @@ To refresh only the page (renderer or layout change, or a target.html change, no
 - **Credits.** The credits screen (ReplicatedFirst `PlayHUD.Credits`) stays as V1.
 - **Extra save slot.** The entry flow shows the buy-slot card and its states: default, price unknown, waiting, adding, late grant, couldn't open, success and at max (no card, "10 of 10 save slots"). It is the live developer product `SaveSlotConfig.ExtraSlotProduct` (49 Robux, 2 free slots, max 10); the price is an example. Built in game, Unlock must be a real button (gamepad and Enter), only one prompt runs at a time with a 30 s wait, and the card always shows owned and max.
 - **Open choices** it assumes: Air drawn gold (its mobile medallion) rather than cream (the Book).
-- **Building toward it.** Tokens go in one `Shared/WovenTheme` module and components in a `Shared/WovenUI` kit
-  grown from `ButtonTemplateView`. When a screen is built, re-export the place and rebuild the main page as above.
+- **Building toward it.** Tokens are in `Shared/WovenTheme`, components in `Shared/WovenUI` and glyph rects in
+  `Shared/WovenGlyphs`. When a screen is built, re-export the place and rebuild the main page as above.
 - **Live ↔ target.** `TARGET_MAP` in build.mjs marks each live ScreenGui: kept in target, reworked (links to its
   target section) or no target yet. Add a row when a gui is added. Keys are gui names, or full paths where a name repeats (the two `PlayHUD`s). The build prints how many guis are mapped and fails on a link to a section id that does not exist.
 - **Ids.** Every id in target.html starts with `t-`, and its CSS is scoped under `#target`, so it never clashes with the live part.

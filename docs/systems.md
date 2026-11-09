@@ -74,7 +74,7 @@ Keep this file current: when a system's owner scripts change, update its entry i
 
 ## Channeling, weaves and casting
 
-- **Server:** `Services/ChannelService`, `Services/WeaveService`, `Services/AbilityService`, `Services/ManaService`, `Services/BurnoutService`, `Services/ChannelRecoveryService`, `Services/LearnedWeaveService`, `Services/AffinityService`, `Services/WeavePresentationService`, `Services/WeaveCastLog`, `Services/SoloWeaveRuntime`, `ServerScriptService/WeavePresentationObserver`, `Server/ActiveAbilityBridge`, `Abilities/*`
+- **Server:** `Services/ChannelService`, `Services/WeaveService`, `Services/AbilityService`, `Services/ManaService`, `Services/BurnoutService`, `Services/ChannelRecoveryService`, `Services/LearnedWeaveService`, `Services/AffinityService`, `Services/WeavePresentationService`, `Services/WeaveCastLog`, `Services/SoloWeaveRuntime`, `Services/WeaveStatsService` (read-only `ReplicatedStorage/WeaveStats` for the UI), `ServerScriptService/WeavePresentationObserver`, `Server/ActiveAbilityBridge`, `Abilities/*`
 - **Client:** `SPS/ChannelController`, `SPS/ThreadVisualController`, `SPS/ChannelFeedbackController`, `SPS/ChannelAnimationController`, `SPS/WeaveFailureFeedbackController`, `SPS/AbilitySoundController`, per-weave controllers in `Controllers/`
 - **Shared:** `Shared/WeaveConfig`, `Shared/CircleReworkConfig`, `Shared/WeaveInfoConfig`, `Shared/ElementConfig`, `Shared/WeaveGestureLibrary`, per-weave configs
 - **Remotes:** `ChannelRequest`, `ElementCaught`, `CastRequest`, `ThreadVisual`, `WeaveFeedback`, `<Id>Action`, `<Id>Visual`, `<Id>Feedback`

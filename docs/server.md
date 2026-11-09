@@ -75,7 +75,7 @@ All entries are ModuleScripts unless marked. "Start" means the module exposes `S
 
 | Module | Lines | Responsibility | Notes |
 |---|---|---|---|
-| DataService | 896 | Player profile: load, save, cache, leaderstats, session hooks (`OnSession`), save-slot peek, wipe | Store `PlayerData_V1`. Reads `WarderProgress_v1`. No Start. **No autosave loop**, though its header says there is one (`:2`) |
+| DataService | 900 | Player profile: load, save, cache, leaderstats, session hooks (`OnSession`), save-slot peek (`PeekSlots`: Exists, Level, Class, Kills, LastPlayed, Marks, Title), wipe | Store `PlayerData_V1`. Reads `WarderProgress_v1`. No Start. **No autosave loop**, though its header says there is one (`:2`) |
 | SaveSession | 22 | Pure map player → open slot; `Key(player, base, suffix, slot)` | Has an assert-based `SelfCheck` child (30 lines) |
 | SaveSlotService | 113 | Save picker (List/Buy/Choose) and account record | Start. Listens `SaveSlot` (RF). Store `WovenAccount_v1`. `GrantReceipt` is called from GiftServer |
 | LevelRules | 87 | Pure level rules: legacy migration, Warder level merge, clamp, owner-only commands. `WARDER_STORE = "WarderProgress_v1"` | Has a `SelfCheck` child (66 lines) |
@@ -113,6 +113,7 @@ All entries are ModuleScripts unless marked. "Start" means the module exposes `S
 | ChannelService | 784 | Channel start, stop and confirm; element catching; ready weave | Start. Listens `ChannelRequest`, `ElementCaught` |
 | ChannelRecoveryService | 27 | Stores the client's input mode (mobile or not) | Listens `ChannelInputMode` |
 | ManaService | 1207 | Mana pool, regen, `SpendWithBurnout`, `Mana` attribute | Start |
+| WeaveStatsService | 70 | Publishes read-only weave numbers to `ReplicatedStorage/WeaveStats` (ThreadCap, BurnoutBaseMultiplier, per-weave ManaCost/ReadyWindow/GateElement/GateTier), each read from the module gameplay uses | Start (guarded, from ServerBootstrap). Has a `SelfCheck` child. Nothing on the server reads WeaveStats |
 | BurnoutService | 148 | Burnout state; `InitPlayer` | |
 | AbilityService | 1691 | Routes casts to ability modules in `Server/Abilities` | Start. Listens `CastRequest` |
 | WeaveService | 88 | Matches a recipe to a weave (`IdentifyWeave`) | |
@@ -120,7 +121,7 @@ All entries are ModuleScripts unless marked. "Start" means the module exposes `S
 | AbilityOwnershipService | 100 | `Abilities.weave` / `.warder`, shown as `HasAbility_*` attributes | Start → `OnSession` |
 | QuickSlotService | 925 | Quick slots, loadouts, cooldowns, Extra Quick Slots pass | Start. Listens `QuickSlotAssign`, `QuickSlotUse`, `QuickSlotSwitch` |
 | AffinityService, MaximumAffinityService | 425 / 76 | Weave affinity; the pass entitlement | Start / – |
-| ElementSkillService, ElementAlignmentPolicy | 287 / 89 | Skill points, tiers, alignment purchase | Listens `ElementSkillPurchase`, `ChooseElementAlignment`, `ChangeElementAlignment` (RF, all created at require time) |
+| ElementSkillService, ElementAlignmentPolicy | 287 / 89 | Skill points, tiers, alignment purchase; mastery gate map in the pure child `ElementSkillService/MasteryGates` | Listens `ElementSkillPurchase`, `ChooseElementAlignment`, `ChangeElementAlignment` (RF, all created at require time) |
 | ProgressionService | 510 | XP and level, 2x XP pass, kill and assist XP | Start |
 | BeyondPatternService | 77 | Beyond the Pattern pass: level cap 100 or 500 | |
 | SpiritTechniqueService, MagicCharacterService | 235 / 292 | Spirit techniques | Listens `SpiritTechnique` (created at require time) |
@@ -229,6 +230,7 @@ All entries are ModuleScripts unless marked. "Start" means the module exposes `S
 16. `SilenceService.Start`.
 17. `StatusDurationService.Start`.
 18. `QuickProtectService.Start`.
+19. `WeaveStatsService.Start` (builds `ReplicatedStorage/WeaveStats`; requires ChannelService and ManaService, which have no require-time side effects).
 
 **Other starters spread across scripts:**
 
@@ -259,7 +261,7 @@ All entries are ModuleScripts unless marked. "Start" means the module exposes `S
 5. `FirstJourneyService.Prepare(player)`. If it returns true, set `SessionDataReady=true` (`:72-74`).
 6. **Play.** The client fires `PlayEntry("Play")`. The server checks `SessionDataReady`, may send the player into the tutorial, sets `EnteredWorld=true`, and calls `LoadCharacterAsync` (`PlayEntryServer:125-141`). On death, a respawn is scheduled after `RespawnTime` (`:57-73`).
 7. **Back to Main Menu.** The client fires `PlayEntry("Menu")`, which leads to `DataService.Unload(player)` (`PlayEntryServer:82-105`). On success the character is destroyed, the menu returns, and ServerMain's outer loop waits for the next pick (`ServerMain:76`).
-8. **Unload** (`DataService:862-892`), in order:
+8. **Unload** (`DataService:866-896`), in order:
    1. Clear the profile, which blocks writes through `GetData`.
    2. `savePlayer`. If it fails and the player is not leaving, restore the profile and return false.
    3. Run every hook's `Leave`.
@@ -420,7 +422,7 @@ Registered by:
 - TitlesService: Load.
 - GuardianBondService: Load, Save, Unload.
 
-`OnSession` replays `Load` for profiles that are already loaded (`DataService:848-850`), so registering late is safe.
+`OnSession` replays `Load` for profiles that are already loaded (`DataService:852-854`), so registering late is safe.
 
 ### 5.4 Player attributes (main ones written in this area)
 
@@ -531,8 +533,8 @@ The code uses only a few literal tags: `RawFireSource` (RawFireSourceService), `
 - **Stubs:** `MissionsServer` pushes empty state (`MissionsServer:14` "replace with real mission store"). No client listens to `MissionsChanged` or fires `MissionsReady`.
 - **Warder V1 next to V2.** `WarderService` (Script) plus the `Warder/` modules (melee V1) coexist with `WarderCombatService` ("Warder Combat Test V2 prototype"). While V2 is on, `HasAbility_*` read false so V1 stands down (`WarderCombatService:4`). Which one ships is an open question.
 - **Header that no longer matches the code.** DataService claims "autosave, BindToClose flush" (`DataService:2`). No autosave exists, and the BindToClose lives in ServerMain.
-- **`DataService.RemovePlayer`** (`:838`) has no caller found; Unload replaced it.
-- **`DataService.DeleteStoredData`** only deletes the slot-1 key `Player_<uid>` (`:630-638`). Other slots, economy, account, settings, map, bonds and gifts stay. It is probably the admin `Wipe` command (guess).
+- **`DataService.RemovePlayer`** (`:842`) has no caller found; Unload replaced it.
+- **`DataService.DeleteStoredData`** only deletes the slot-1 key `Player_<uid>` (`:634-642`). Other slots, economy, account, settings, map, bonds and gifts stay. It is probably the admin `Wipe` command (guess).
 - **Backups in `ServerStorage/MCPBackups`** clutter searches (e.g. `SaveCards_20261106_Before` holds disabled `GiftServer_v2`, `PlayEntryServer_v2`, `SaveSlotService_v2`; `GiftProductConfig` shows a reference from `GiftServer_v2`). Filter them out.
 - **TODO-style markers.** There are no `TODO`/`FIXME`. Known limits use `shortcut:` comments (`WarderCombatService:435,673,1280,1628`, `TrollocScent:30`). `ponytail:` comments mark design decisions about movement ownership (§7).
 
@@ -628,7 +630,7 @@ Use `MovementStateService` states with a priority (e.g. `MoveState.Lock(c, 'Name
 8. **No autosave of the main profile.** `PlayerData_V1` is written only on Unload, shutdown, and incidentally by economy XP delivery. A server crash or a shutdown past the BindToClose budget loses the **whole session's** level, XP, kills, learned weaves and quick slots. Settings and map autosave every 120 s; economy writes on every transaction.
 9. **No session locking.** `UpdateAsync` returns `data` unconditionally (`DataService:570-577`). On a fast rejoin to another server, the new server can load before the old server's leave-save lands; the old save then overwrites the newer one, or the reverse. Back-to-Menu followed by picking the same slot is safe inside one server (`Unloading` blocks it and `PeekSlots` reads uncached), but not across servers.
 10. **Shutdown saves run one after another.** ServerMain's BindToClose calls `SavePlayer` for each player in turn (`ServerMain:98-103`), and `PlayerRemoving → Unload(player, true)` may also run for the same players. With many players, slow DataStore calls can exceed the 30 s budget.
-11. **Leaving after a failed save.** When `leaving=true` and `savePlayer` fails, Unload still continues (`DataService:875`); that progress is lost after one try (no retry in savePlayer).
+11. **Leaving after a failed save.** When `leaving=true` and `savePlayer` fails, Unload still continues (`DataService:879`); that progress is lost after one try (no retry in savePlayer).
 12. **Stuck on the menu.** A failed load kicks the player (`DataService:410`), which is safe. But if `BeyondPattern.ResolveMaxLevel` returns nil, the code returns silently (`:454-455`): no profile, no session, `SessionDataReady` never set (guess whether it can return nil, e.g. on a MarketplaceService error).
 13. **Map discovery is account-wide, not per save** (`MapDiscoveryServer:54,64`, key `u<uid>`). Every other per-save store uses `SaveSession`. May be intentional; undocumented.
 14. **The data-wipe helper is incomplete.** `DeleteStoredData` only removes slot 1 of `PlayerData_V1` (§8). A data-deletion request needs every key in §5.1.

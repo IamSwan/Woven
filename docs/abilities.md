@@ -20,7 +20,7 @@ Every module under `Abilities` and `CustomWeaving` is a ModuleScript; they run o
 
 **Channeling.** Pressing Channel (the `Channel` input action) sends `ChannelRequest("Start")`. The server accepts it only from `Idle`, and only when no suppression attribute is set (`ServerScriptService/Server/Services/ChannelService:125-204`). The player is slowed to walk speed 3 through `MovementStateService` at priority 60. An empty weave `{Elements = {}}` is stored per player in `activeWeaves` (`ChannelService:42,171-182`).
 
-**Threads and elements.** While channeling, the player catches element buttons. Each catch sends `ElementCaught(elementName, spawnPosition)`, and the server appends the element to the weave (`ChannelService:257-343`). There are five elements: `Air`, `Fire`, `Water`, `Earth` and `Spirit`. A name is valid only when it is a key of `ElementConfig` (`ChannelService:79-91`, `ReplicatedStorage/Shared/ElementConfig:7-92`). A weave holds at most 10 threads (`MAX_THREADS_PER_WEAVE`, `ChannelService:36`). The server mirrors the thread list into the `GatheredThreadCount` and `GatheredThreadElements` attributes.
+**Threads and elements.** While channeling, the player catches element buttons. Each catch sends `ElementCaught(elementName, spawnPosition)`, and the server appends the element to the weave (`ChannelService:257-343`). There are five elements: `Air`, `Fire`, `Water`, `Earth` and `Spirit`. A name is valid only when it is a key of `ElementConfig` (`ChannelService:79-91`, `ReplicatedStorage/Shared/ElementConfig:7-92`). A weave holds at most 10 threads (`MAX_THREADS_PER_WEAVE`, `ChannelService:35`, exposed read-only as `ChannelService.MaxThreadsPerWeave`). The server mirrors the thread list into the `GatheredThreadCount` and `GatheredThreadElements` attributes.
 
 **Weave (recipe).** A weave is an entry in `WeaveConfig` with an `Elements` list. By default the order matters; `OrderMatters = false` turns it into multiset matching (`ServerScriptService/Server/Services/WeaveService:61-85`). Confirming (`ChannelRequest("Confirm")`) runs `WeaveService.IdentifyWeave`. On a match, the player becomes `WeaveReady`, the `ReadyWeave` attribute is set to the ability id, and walk speed drops to 5 (`ChannelService:441-463`). On no match, the server sends `WeaveFeedback("WeaveFailed")` and the channel collapses (`ChannelService:413-430`), unless the player is eligible for custom weaving, in which case the server first tries `ExperimentService.TryOpen` (`ChannelService:415`).
 
@@ -28,11 +28,11 @@ Every module under `Abilities` and `CustomWeaving` is a ModuleScript; they run o
 
 **Mana and burnout.** `ManaService.SpendWithBurnout(player, amount)` spends mana. When mana runs short, it zeroes mana and charges the shortfall as health damage: shortfall × `GetBurnoutHealthMultiplier`. If that damage is at least the player's current health, `TriggerBurnoutDeath` runs (`ServerScriptService/Server/Services/ManaService:793-862`). The `BurnoutRecovery` attribute then blocks every cast (`AbilityService:202-206,990`; `ChannelService:118-142`).
 
-**Elements, tiers and alignment.** Each element has a skill tree of 10 tiers (`ReplicatedStorage/Shared/ElementSkillConfig:2-18`), replicated as `<Element>Tier` attributes. Fire tiers 5, 6 and 9 each add +10% damage to Fire weaves. Tier 10 in Air or Fire adds +30% unless the weave sets `MasteryDamageIncluded` (`ReplicatedStorage/Shared/ElementMastery:20-35`). Three "mastery weaves" need tier 10 in one element: Tornado (Air), Lightning (Fire) and Crumble (Earth), unless the player is "all-aligned" (`ServerScriptService/Server/Services/ElementSkillService:235-246`). Without alignment to that element, they deal half damage (`ElementSkillService:249-253`). The level-100 "Advanced" trees (Vitality and Endurance) add HP and stamina only (`ReplicatedStorage/Shared/AdvancedSkillConfig:2-6`).
+**Elements, tiers and alignment.** Each element has a skill tree of 10 tiers (`ReplicatedStorage/Shared/ElementSkillConfig:2-18`), replicated as `<Element>Tier` attributes. Fire tiers 5, 6 and 9 each add +10% damage to Fire weaves. Tier 10 in Air or Fire adds +30% unless the weave sets `MasteryDamageIncluded` (`ReplicatedStorage/Shared/ElementMastery:20-35`). Three "mastery weaves" need tier 10 in one element: Tornado (Air), Lightning (Fire) and Crumble (Earth), unless the player is "all-aligned" (`ServerScriptService/Server/Services/ElementSkillService:235-246`). The weave → element/tier map lives in the pure child `ElementSkillService/MasteryGates`. Without alignment to that element, they deal half damage (`ElementSkillService:249-253`). The level-100 "Advanced" trees (Vitality and Endurance) add HP and stamina only (`ReplicatedStorage/Shared/AdvancedSkillConfig:2-6`).
 
 **Raw elements.** Weaves made of a single thread (`RawAir`, `RawWater`, `RawEarth`, `RawSpirit`, and `FireDrawing`, shown as "Raw Fire") are progressive multi-technique weaves. The recipe never changes; the element's tier gates the techniques. `RawAir` uses `AirTier × 10` as its level (`Abilities/RawAir:226-227`), and `RawSpiritProgression.GetLevel` uses `SpiritTier`. Each raw weave runs a long-lived server state machine and its own `Raw<El>Action` remote.
 
-**Wards.** The `Ward` weave (`Air`+`Earth`) is implemented inline in `AbilityService`. Aimed at a "WardZone" doorway, it makes a timed doorway ward (`WardService.CreateDoorwayWard`); otherwise it makes a held ward through `HeldWardService.Begin` (`AbilityService:877-943`). `WardService.IsMagicPathBlocked` is the shared line-of-magic query that projectile weaves call during flight (e.g. `Abilities/Fireball:941`). `ListeningWard` ("Ward Against Listening") is a separate drain-per-second weave.
+**Wards.** The `Ward` weave (`Air`+`Earth`) is implemented inline in `AbilityService`. Aimed at a "WardZone" doorway, it makes a timed doorway ward (`WardService.CreateDoorwayWard`); otherwise it makes a held ward through `HeldWardService.Begin` (`AbilityService:877-943`). `WardService.IsMagicPathBlocked` is the shared line-of-magic query that projectile weaves call during flight (e.g. `Abilities/Fireball:907`). `ListeningWard` ("Ward Against Listening") is a separate drain-per-second weave.
 
 **Held and tied weaves.** Some weaves are "held" (`CombatService:167-169`). A player of level 100 or higher who owns Beyond the Pattern can "tie" a supported held weave (Compulsion, FireHold, PainInfliction, ListeningWard, GrandShield, MassHealing) through the `TiedWeaveAction` remote, which frees them to weave again (`CombatService:152-214`). `TiedWeave` and `TieWeaveAvailable` are attributes.
 
@@ -77,8 +77,9 @@ Shorthand: **R** = key requires, **Rm** = remotes used (`*` = created at runtime
 | `Services/HeldWardService` | Module | Held-ward lifecycle, block queries, tie adapter | HeldWardConfig, Mana, Movement, Projectile | HeldWardAim, HeldWardStop, WardHitImpact |
 | `Services/WardService` | Module | Doorway/defensive wards, `IsMagicPathBlocked` | — | WardVisual |
 | `Services/QuickSlotService` | Module | Quick-cast slots: validation, cooldowns, prepare-then-cast | ChannelService, AbilityService, LearnedWeaveService, WeaveInfoConfig | QuickSlotAssign/Use/Cooldown/Switch, CircleReworkVisual |
-| `Services/ElementSkillService` | Module | Element tiers, alignment, mastery gates | ElementSkillConfig, AdvancedSkillConfig, DataService | ElementSkillPurchase*, ChooseElementAlignment*, ChangeElementAlignment* (RemoteFunctions) |
+| `Services/ElementSkillService` | Module | Element tiers, alignment, mastery gates (map in the pure child `MasteryGates`) | ElementSkillConfig, AdvancedSkillConfig, DataService | ElementSkillPurchase*, ChooseElementAlignment*, ChangeElementAlignment* (RemoteFunctions) |
 | `Services/LearnedWeaveService` | Module | Known-weave inventory (`LearnedWeaves` in the profile) | DataService | — |
+| `Services/WeaveStatsService` | Module | Builds `ReplicatedStorage/WeaveStats` once at start: read-only `ThreadCap`, `BurnoutBaseMultiplier` and per-weave `ManaCost`/`ReadyWindow`/`GateElement`/`GateTier` for the UI. Has a `SelfCheck` child | WeaveConfig, WeaveInfoConfig, BoneBreakConfig, ChannelService, ManaService, `MasteryGates`, ability `Settings` children | — |
 | `ActiveAbilityBridge` | Script | Derives `ActiveAbility` from `IncomingThreads.Activation` attributes and broadcasts `IncomingThreadVisual` | WeaveConfig, VfxBroadcast | IncomingThreadVisual |
 | `Services/WarderSkillService` | Module | Warder tree purchase and sync | WarderSkillConfig, WarderSwordForms, DataService | WarderSkillPurchase (RemoteFunction) |
 | `Services/WarderCombatService` | Module | Warder Combat Test V2 prototype; melee hitboxes; `BlockWeave` | WarderTest, WarderSwordForms, WarderSkillConfig | WarderTestRequest, GuardianBond |
@@ -94,12 +95,12 @@ Shorthand: **R** = key requires, **Rm** = remotes used (`*` = created at runtime
 | `Ignite` | 417 | Fire+Fire burn over time | Legacy | IgniteVisual, IgniteCastApproved, ThreadVisual |
 | `Drowning` | 546 | Water+Water drowning hold | Legacy | DrowningVisual, DrowningCastApproved, DrowningRelease (listens) |
 | `PowerChannel` | 943 | 10-thread held power channel (2 of every element) | Legacy, owns mana | PowerChannelVisual/Release (listens)/Notification |
-| `RockThrow` | 1263 | Single rock summon and throw | Legacy, owns mana | RockThrowAction (listens), RockThrowVisual, RockThrowFeedback |
-| `RockBarrage` | 1183 | Earth×10 rock arc | Legacy, owns mana | RockBarrageAction* (listens), RockThrowVisual/Feedback |
+| `RockThrow` | 1240 | Single rock summon and throw; tunables in the pure child `RockThrow/Settings` | Legacy, owns mana | RockThrowAction (listens), RockThrowVisual, RockThrowFeedback |
+| `RockBarrage` | 1143 | Earth×10 rock arc; tunables in the pure child `RockBarrage/Settings` | Legacy, owns mana | RockBarrageAction* (listens), RockThrowVisual/Feedback |
 | `SpiritStun` | 84 | "Spirit Block" | Legacy route + generic policy | RawSpiritVisual, IncomingThreadVisual, CircleReworkVisual |
 | `FireDrawing` | 1100 | Raw Fire draw/hold | Legacy, owns lifecycle | FireDrawingAction* (listens), ThreadVisual |
-| `Fireball` | 1218 | Two-stage homing fireball | Legacy, owns mana | FireballAction* (listens), FireballVisual*, FireballAnimation*, FireballFeedback* |
-| `AirBlades` | 1218 | Air×5 blade halo, volleys | Legacy, owns mana | AirBladesAction* (listens) |
+| `Fireball` | 1184 | Two-stage homing fireball; tunables in the pure child `Fireball/Settings` | Legacy, owns mana | FireballAction* (listens), FireballVisual*, FireballAnimation*, FireballFeedback* |
+| `AirBlades` | 1159 | Air×5 blade halo, volleys; tunables in the pure child `AirBlades/Settings` (`BladeCount`/`VolleyCount` set by AirBlades) | Legacy, owns mana | AirBladesAction* (listens) |
 | `MakingFog` | 319 | Water+Water+Air fog | Legacy | ThreadVisual |
 | `InsectControl` | 699 | Earth+Earth swarm | Legacy, owns mana | InsectControlAction* (created; **no server listener found**), InsectControlVisual*, InsectControlAnimation*, ScreenShake |
 | `Healing` | 1187 | Held heal | Generic | HealingAction (listens), HealingVisual, HealingFeedback |
@@ -182,7 +183,7 @@ Counts are the number of non-backup scripts that name the module (server/client)
 
 Fireball has the recipe `Fire, Fire, Air` with order mattering (`WeaveConfig` entry at `:1108`; live data `Elements = {Fire, Fire, Air}`, `ManaCost = 0`, `Range = 60`).
 
-**Step 0: boot.** `ServerMain:36` calls `CircleIntegrationService.Install()`. Install saves the originals and **replaces** `ChannelService.StartChanneling`, `CancelChanneling`, `AddElement`, `ConfirmWeave`, `PrepareQuickWeave` and `ClearWeave`, plus `ManaService.CanSpend/Spend/SpendWithBurnout` and `DamageService.DealDamage` (`CircleIntegrationService:509-529,531-979`). It also connects its own `CastRequest` listener (`:988`). Then `AbilityService.Start()` (`ServerMain:48`) loads the generic modules, calls every module's `Start()` (`AbilityService:1579-1620`; `Fireball.Start` connects `FireballAction`, `Abilities/Fireball:1196`) and connects the main `CastRequest` listener (`AbilityService:1630`).
+**Step 0: boot.** `ServerMain:36` calls `CircleIntegrationService.Install()`. Install saves the originals and **replaces** `ChannelService.StartChanneling`, `CancelChanneling`, `AddElement`, `ConfirmWeave`, `PrepareQuickWeave` and `ClearWeave`, plus `ManaService.CanSpend/Spend/SpendWithBurnout` and `DamageService.DealDamage` (`CircleIntegrationService:509-529,531-979`). It also connects its own `CastRequest` listener (`:988`). Then `AbilityService.Start()` (`ServerMain:48`) loads the generic modules, calls every module's `Start()` (`AbilityService:1579-1620`; `Fireball.Start` connects `FireballAction`, `Abilities/Fireball:1162`) and connects the main `CastRequest` listener (`AbilityService:1630`).
 
 **Step 1: start the channel (client).** `ChannelController` receives `ActionBegan(Channel)` and sends `ChannelRequest:FireServer("Start")` when `CombatState` is `Idle` or `WeaveReady` (`StarterPlayerScripts/ChannelController:580-584`).
 
@@ -208,11 +209,11 @@ Fireball has the recipe `Fire, Fire, Air` with order mattering (`WeaveConfig` en
 - calls `CombatService.BeforeHeldWeave` (`:1048`);
 - routes `"Fireball"` to `Fireball.Cast(context)`, with context `{Player, Character, RootPart, AimPosition, AbilityData}` (`:946-970,1130-1144`).
 
-**Step 7: `Fireball.Cast` (server).** It refuses a second session or a dead humanoid. It spends `SETTINGS.ManaCost = 65` with `ManaService.SpendWithBurnout` (the Circle-aware wrapper, `Abilities/Fireball:94-95,1102-1107`). It creates the session, arms a birth timeout (`:1129-1136`), sets `FireballActive = true` and `FireballReady = false` (`:1138-1139`), creates the ball through `ImportedFireballService.Create(player, ActiveAbilityEffects)` (`:205`), connects interrupt-on-damage (`HealthChanged`) and `Died` (`:1148-1172`), sets `CombatState = Idle` (`:1174`), and spawns `riseBall` (`:1179`).
+**Step 7: `Fireball.Cast` (server).** It refuses a second session or a dead humanoid. It spends `SETTINGS.ManaCost = 65` (`Abilities/Fireball/Settings`) with `ManaService.SpendWithBurnout` (the Circle-aware wrapper, `Abilities/Fireball:1068-1073`). It creates the session, arms a birth timeout (`:1095-1102`), sets `FireballActive = true` and `FireballReady = false` (`:1104-1105`), creates the ball through `ImportedFireballService.Create(player, ActiveAbilityEffects)` (`:171`), connects interrupt-on-damage (`HealthChanged`) and `Died` (`:1114-1138`), sets `CombatState = Idle` (`:1140`), and spawns `riseBall` (`:1145`).
 
 **Step 8: after `Cast` returns true (AbilityService).** The water-extinguish check does not apply to Fireball (`:1319-1325`). The service runs `CompulsionService.MirrorCast`, `WeaveCastLog.Cast` (→ EconomyService), `WeavePresentationService.Cast` and `AffinityService.RecordCast` (`:1338-1341`). It learns the weave and pays `ManaService.RewardWeaveLearn` on the first cast (`:1349-1381`). The Fireball branch then calls `ChannelService.ClearWeave(player, true)` (keeps the threads visible), followed by `ThreadVisual("Clear")` (`:1482-1494`).
 
-**Step 9: rise and ready.** `riseBall` lerps the server ball from below the torso to the ready pose over `RiseDuration = 0.7` s and plays the `FireLift` gesture (`FireGestureService`). It then sets `FireballReady = true`, broadcasts `FireballVisual("Ready", character, ball)` within 180 studs, starts the follow loop, and arms a 15 s `ReadyTimeout` (`Abilities/Fireball:641-718`).
+**Step 9: rise and ready.** `riseBall` lerps the server ball from below the torso to the ready pose over `RiseDuration = 0.7` s and plays the `FireLift` gesture (`FireGestureService`). It then sets `FireballReady = true`, broadcasts `FireballVisual("Ready", character, ball)` within 180 studs, starts the follow loop, and arms a 15 s `ReadyTimeout` (`Abilities/Fireball:607-684`).
 
 **Step 10: throw (client).** `FireballController` listens to `ActionBegan(PrimaryAction)`. When `FireballActive` and `FireballReady` are both true (0.25 s local debounce), it sends `FireballAction:FireServer(mouse.Hit.Position, mouse.Target)`, or the controller/mobile aim (`Controllers/FireballController:26-118`). The same click also sends a `CastRequest`, which the server ignores because the state is no longer `WeaveReady` (inferred from the code paths).
 
@@ -257,7 +258,7 @@ All remotes here are RemoteEvents unless marked (RF). `*` marks remotes created 
 | Remote | Owner | Payload (as read) | Validation observed |
 |---|---|---|---|
 | `FireballAction`* | Fireball | `aim, clickedInstance` | CanAct, session Ready, Vector3 aim, target lock ≤ 60 studs, `BeingStilled` drop. Mana paid at the first stage. No cooldown in the module; quickslot cooldown is 10 (`WeaveInfoConfig`). |
-| `AirBladesAction`* | AirBlades | `aim, clickedInstance, mode("All"\|...)` | CanAct, session Ready and not barraging, Vector3 aim, Instance check (`Abilities/AirBlades:1038-1074`) |
+| `AirBladesAction`* | AirBlades | `aim, clickedInstance, mode("All"\|...)` | CanAct, session Ready and not barraging, Vector3 aim, Instance check (`Abilities/AirBlades:979-1015`) |
 | `LightningAction` | Lightning | `"Strike"\|"Cancel", aim` | CanAct, mastery, suppression, per-strike timer, Vector3, horizontal distance ≤ `AbilityData.Range` (75), shelter check. Manual cooldown = affinity-adjusted `WeaveInfoConfig.Lightning.QuickSlotCooldown` (20) (`Abilities/Lightning:620-677,769-906,946-960`) |
 | `FireballBarrageAction`* | FireballBarrage | aim, … | Module has cooldown code (not traced) |
 | `RockThrowAction`, `RockBarrageAction`* | RockThrow/RockBarrage | aim, clicked | Type and range check patterns present (not traced) |
@@ -286,7 +287,7 @@ Most transient visuals go through `VfxBroadcast.FireNearby(remote, pos, radius, 
 
 - `ChannelService.activeWeaves[player] = {Elements, LastCatchTime, IsQuickSlot?, CustomId?, MoveHandle}` (`ChannelService:42`).
 - `AbilityService.activeCastRequests` (`:181`).
-- A per-module `sessions[player]` table in almost every ability (e.g. `Fireball:131`).
+- A per-module `sessions[player]` table in almost every ability (e.g. `Fireball:97`).
 - `SoloWeaveRuntime.casting`; `CombatService.tiedWeaves`; the Circle registries in `CircleAbilityRuntime` (`active`, `tiedMaintained`, `placedFlames`, `wards`, `walls`).
 
 ### 6.2 Player attributes (server-set, replicated)
@@ -306,7 +307,7 @@ A source scan found 257 attribute names set by the ability modules and core serv
 
 | Folder | Created by | Holds |
 |---|---|---|
-| `ActiveAbilityEffects` | Fireball, AirBlades, RockThrow, RockBarrage, FireDrawing, FireHold, FireballBarrage, MakingFog, Conflagration, RawFireRuntime (find-or-create, e.g. `Fireball:134-139`) | Server projectile and effect parts |
+| `ActiveAbilityEffects` | Fireball, AirBlades, RockThrow, RockBarrage, FireDrawing, FireHold, FireballBarrage, MakingFog, Conflagration, RawFireRuntime (find-or-create, e.g. `Fireball:100-105`) | Server projectile and effect parts |
 | `SoloWeaveEffects` | `SoloWeaveRuntime:17-18`, ChannelerNPCSpells | Invisible marker parts for AirSlash/Tornado/Crumble |
 | `RawEarthEffects` | RawEarth | Rocks, walls, soldiers |
 | `ActiveThreads` | Client `ThreadVisualController` (also referenced by server `Abilities/RawAir`) | Client thread actors |
@@ -315,7 +316,7 @@ A source scan found 257 attribute names set by the ability modules and core serv
 
 ### 6.4 Persistent data (`DataService` profile)
 
-`LearnedWeaves` (`Services/DataService:75,691-694`), `WeaveAffinity` (cast counts for cooldown reduction, `:91,706-780`; `AffinityService.GetAdjustedCooldown`), `QuickSlots` and `ExtraQuickSlots` (`:97,790-819`), `ElementSkills` (read by `ElementSkillService:239`), `AdvancedSkills`, `SkillPoints`, `WarderSkills`, `WarderForms`, `Level`. The custom-weave library is stored as "versioned inputs in the existing profile" (`CustomWeaving/LibraryService` header); the key name was not checked.
+`LearnedWeaves` (`Services/DataService:75,695-698`), `WeaveAffinity` (cast counts for cooldown reduction, `:91,710-784`; `AffinityService.GetAdjustedCooldown`), `QuickSlots` and `ExtraQuickSlots` (`:97,794-823`), `ElementSkills` (read by `ElementSkillService:239`), `AdvancedSkills`, `SkillPoints`, `WarderSkills`, `WarderForms`, `Level`. The custom-weave library is stored as "versioned inputs in the existing profile" (`CustomWeaving/LibraryService` header); the key name was not checked.
 
 ## 7. Configuration
 
@@ -409,7 +410,7 @@ No two enabled entries share a recipe signature.
 - **`WeaveConfig.WardingLine`** is defined (`:1888`) and then set to `nil` (`:1940`). `WeaveGestureLibrary.Sets` still has entries for `WardingLine` and `UntyingKnots`, plus several Raw Spirit techniques.
 - **`ChannelService`:** `MINIMUM_CATCH_INTERVAL` (`:37`), `storeOriginalWalkSpeed` (no-op, `:58`) and `PreviousWalkSpeed` fields are unused.
 - **`SoloWeaveRuntime`:** the `cooldowns` table and the local `cd` in `Begin` are unused (`:21,95`).
-- **`FireballAnimation` remote** is created but never fired. `FireballConfig.Animation` clip ids are superseded (`FireballConfig.Procedural = true`); the throw clip id is hard-coded in `Fireball:739`.
+- **`FireballAnimation` remote** is created but never fired. `FireballConfig.Animation` clip ids are superseded (`FireballConfig.Procedural = true`); the throw clip id is hard-coded in `Fireball:705`.
 - **`ElementMastery.TintFire` and `ThreadColor`** are no-op stubs.
 - **`InsectControlAction`** is created and the client waits for it, but no server listener was found.
 - **Backups:** `ServerStorage/MCPBackups` (contains copies of ability scripts such as `AlliesAll_20261106_Before.Lightning`), `ReadabilityBackup_*`, `DisabledFlood`. They do not run, but search tools return hits inside them.
@@ -428,7 +429,7 @@ No two enabled entries share a recipe signature.
 6. **`ReplicatedStorage/Shared/WeaveGestureLibrary`**: add `Sets.<Id>` for cast gestures, or `Excluded.<Id>`. `WeavePresentationService` does nothing without one (`:9`).
 7. **If held:** add the id to `heldWeaveIds` in `Services/CombatService:167-169`. If it should be tieable, add a `tieAdapters` entry and implement `TieSession` / `DetachTie` / `StopTie` (`:158-166`).
 8. **If it is a projectile:** register it with `ProjectileService` and check `WardService.IsMagicPathBlocked`, `HeldWardService.BlockPath`, `GrandShield.BlocksDamage` and `FactionWarService.BlocksFriendlyEffect` (copy from Fireball). Deal damage only through `DamageService.DealDamage(src, hum, amount, "<Id>")` so the Circle and modifier wrappers apply.
-9. **If it should be mastery-gated:** extend the hard-coded maps in `ElementSkillService:236,250` *and* the notice strings repeated in `ChannelService:431-439`, `:537-545` and `AbilityService:1038-1046`.
+9. **If it should be mastery-gated:** add the weave to `Services/ElementSkillService/MasteryGates` (the gate, also published in `ReplicatedStorage/WeaveStats`) and to the damage-penalty map at `ElementSkillService:250` *and* the notice strings repeated in `ChannelService:431-439`, `:537-545` and `AbilityService:1038-1046`.
 10. **Optional:** `FinisherConfig.Resolve` (Fire weaves automatically get "Charred"), AffinityService cooldown behaviour (automatic through `RecordCast`), a `VillageTeachingConfig` / `FirstJourneyService` lesson (not traced), and `CustomWeaving/OfficialProtection` coverage (automatic for the recipe; extend the mechanic signatures only for new executors).
 11. **Warder interaction:** if the weave's live attribute ends in `Active`, `WarderGate` handles it automatically.
 12. **Docs:** add the module to §3.2, its recipe to §7, its remotes to [shared.md §2.5](shared.md), and its client scripts to [client.md](client.md).
@@ -443,7 +444,8 @@ No two enabled entries share a recipe signature.
 
 ### 10.3 Tune a weave
 
-- Numbers in `WeaveConfig` reach generic and SoloWeaveRuntime weaves directly. **Legacy modules carry hard-coded `SETTINGS`:** Fireball's mana, damage, speed and range live in `Abilities/Fireball:94-128`, not in WeaveConfig. Check the module's SETTINGS first.
+- Numbers in `WeaveConfig` reach generic and SoloWeaveRuntime weaves directly. **Legacy modules carry hard-coded `SETTINGS`:** Fireball's mana, damage, speed and range live in the pure child `Abilities/Fireball/Settings`, not in WeaveConfig (RockBarrage, RockThrow and AirBlades have the same `Settings` child; AirBlades sets `BladeCount`/`VolleyCount` itself). InsectControl, FireballBarrage and NoMoreFatigue read their cost from `WeaveConfig.<Id>.ManaCost`. Check the module's SETTINGS first.
+- `Services/WeaveStatsService` publishes the fixed costs, ready windows and gates to `ReplicatedStorage/WeaveStats` for the UI; its mana-route list (`WEAVE_CONFIG_COST`, `OWN`) must change when a weave changes how it pays mana. Run its `SelfCheck` after retuning (it pins Fireball 65/15, RockBarrage 400/20, RockThrow 12, AirBlades 14, InsectControl 70, FireballBarrage 90, NoMoreFatigue 150).
 - Change the display text in `WeaveInfoConfig` (`ManaText`, `DamageText`) to match.
 - Change the quick-slot cooldown in `WeaveInfoConfig.QuickSlotCooldown`; that number also sets Lightning's manual cooldown.
 - Check `CircleReworkConfig` for overrides of the same field.

@@ -111,7 +111,7 @@ Keep this file current: when a system's owner scripts change, update its entry i
 ## Circles
 
 - **Server:** `Services/CircleService`, `Services/CircleIntegrationService`, `Services/CircleWeaveService`, `Services/CircleAbilityRuntime`, `Services/Circle*` helpers, `Abilities/CircleAbilities/*`
-- **Client:** `Controllers/CircleController`, `CircleAbilityController`, `CircleReworkController`, `CircleVisualController`, `CircleEnvironmentController`, `CircleScreenController`, `CircleAudioController`, `CircleVictimController`, `WovenFeedbackController`, `SPS/MobileHUDLayoutController` (Link button), `StarterGui/CircleUIPosition`
+- **Client:** `Controllers/CircleController` (invite toast through `Controllers/ToastController`), `CircleAbilityController`, `CircleReworkController`, `CircleVisualController`, `CircleEnvironmentController`, `CircleScreenController`, `CircleAudioController`, `CircleVictimController`, `WovenFeedbackController`, `SPS/MobileHUDLayoutController` (Link button), `StarterGui/CircleUIPosition`
 - **Shared:** `Shared/CircleConfig`, `Shared/CircleAbilityConfig`, `Shared/CircleReworkConfig`
 - **Remotes:** `CircleAction`, `CircleState`, `CircleVisual`, `CircleEnvironment`, `CircleAbilityVisual`, `CircleAbilityAction`, `CircleVictimFeedback`, `CircleReworkVisual`
 - **Doc:** [abilities.md §2, §10.2](abilities.md)
@@ -137,7 +137,7 @@ Keep this file current: when a system's owner scripts change, update its entry i
 ## Stilling, Silence, Compulsion and status effects
 
 - **Server:** `Services/StillingService`, `Abilities/CircleAbilities/Stilling`, `Services/SilenceService`, `Services/StatusDurationService`, `Services/CompulsionService`, `Services/SpiritTechniqueService`, `Services/ShieldingContestService`, `Services/ContestInputGuard`, `Server/VoluntaryReset`
-- **Client:** `Controllers/StillingController`, `Controllers/ShieldingContestController`, `Controllers/SilenceChatController`, `Controllers/CompulsionController`, `Controllers/SpiritTechniqueController`, `Controllers/VoluntaryResetController`
+- **Client:** `Controllers/StillingController`, `Controllers/ShieldingContestController`, `Controllers/SilenceChatController`, `Controllers/CompulsionController`, `Controllers/SpiritTechniqueController`, `Controllers/VoluntaryResetController`, `Controllers/StatusTrayController` (desktop status icons)
 - **Shared:** `Shared/StillingContestConfig`
 - **Remotes:** `StillingContest`, `StillingVisual`, `ShieldingContest`, `SilenceVisual`, `CompulsionVisual`, `SpiritTechnique`, `VoluntaryCharacterReset`
 - **Data:** `WovenAccount_v1` (`StilledRemaining`); attributes `Stilled`, `Silenced`, `MagicSuppressed`
@@ -165,7 +165,7 @@ Keep this file current: when a system's owner scripts change, update its entry i
 ## Progression
 
 - **Server:** `Services/ProgressionService`, `Services/LearnedWeaveService`, `Services/BeyondPatternService`, `Services/LevelRules`
-- **Client:** `SPS/XPUIController`, `StarterGui/TopHUD/TopHUDController`, `Controllers/LearnedWeaveNotificationController`
+- **Client:** `SPS/XPUIController`, `StarterGui/TopHUD/TopHUDController`, `Controllers/LearnedWeaveNotificationController`, `Controllers/ToastController` (kill-credit and weave-learned toasts)
 - **Remotes:** `ProgressionFeedback`, `WeaveLearned`
 - **Data:** `Level`, `XP`, `LevelGrant`; attributes `XP`, `XPToNextLevel`, `XPMultiplier`
 - **Doc:** [server.md](server.md)
@@ -227,7 +227,7 @@ Keep this file current: when a system's owner scripts change, update its entry i
 
 ## HUD, top bar and menus
 
-- **Client:** `SPS/HUDController` (`MainHUD`), `StarterGui/TopHUD/TopHUDController`, `Controllers/StaminaUIController`, `SPS/KeybindListController`, `Controllers/ResponsiveUIController`, `Controllers/LowDeviceModeController`
+- **Client:** `SPS/HUDController` (`MainHUD`, desktop vitals plate), `Controllers/StatusTrayController` (`StatusTray`), `StarterGui/TopHUD/TopHUDController`, `Controllers/StaminaUIController`, `SPS/KeybindListController`, `Controllers/ResponsiveUIController`, `Controllers/LowDeviceModeController`
 - **Shared:** `Shared/UiManager`, `Shared/TopButtonTheme`, `Shared/ScreenEffectLayout`
 - **Doc:** [client.md §5](client.md)
 

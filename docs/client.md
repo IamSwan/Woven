@@ -39,7 +39,7 @@ Every script is a `LocalScript` with `RunContext = Legacy` unless noted. "L" is 
 | SPS/InputController | 895 | Central PC/gamepad/touch action map. Fires ActionBegan/ActionEnded, primary-action casting, mobile Channel/Confirm/Sprint buttons, gamepad router, floating-word navigation | InputActions, TouchUI, Keybinds, UiManager, SprintConfig, ControllerAim, MobileTapGate, ProjectileAimService, ControllerCursor | CastRequest, HealingAction, FoldedLightAction, SprintRequest, ChannelRequest, ListeningWardAction, FireHoldAction, `<Id>Action` (multi-throw); CE: ActionBegan, ActionEnded, ControllerElement, ControllerQuickSlot |
 | SPS/ChannelInputMode | 8 | Tells the server whether the player is on touch input | – | ChannelInputMode |
 | SPS/ControllerCursorController | 89 | Gamepad virtual cursor toggle | ControllerCursor, Keybinds | CombatStateRequest |
-| SPS/KeybindListController | 429 | On-screen controls list (`KeybindList` gui), touch "tie weave" button, `TiedWeaveWords` gui | ControllerAim, TouchUI, WarderGate, WarderSkillConfig, Keybinds, KeyLabel | TiedWeaveAction |
+| SPS/KeybindListController | 467 | Key hint strip (`KeybindList` gui, desktop only): silver key chips centred under the action bar, 18 px above the bottom; while wider than `QuickSlotHUD.SlotBar` it starts at the bar's left edge. Guardian mode (`WarderTestOn`) keeps the bottom-right column. Also the touch "tie weave" button and the `TiedWeaveWords` gui | ControllerAim, TouchUI, WarderGate, WarderSkillConfig, Keybinds, KeyLabel, WovenUI, WovenTheme | TiedWeaveAction |
 | SPS/CameraController | 27 | Forwards TogglePvP from ActionBegan to the server (no camera code left) | InputActions | CombatStateRequest; CE: ActionBegan |
 | SPS/Controllers/SprintController | 178 | Sprint key (CAS `SprintAction`), toggle-vs-hold setting | SprintConfig, Keybinds | SprintRequest |
 | SPS/Controllers/PowerChannelInputController | 124 | Power Channel release input | – | PowerChannelRelease |
@@ -52,7 +52,7 @@ Every script is a `LocalScript` with `RunContext = Legacy` unless noted. "L" is 
 | Path | L | Responsibility | Key requires | Remotes |
 |---|---|---|---|---|
 | SPS/ChannelController | 665 | Channelling minigame: falling element buttons (desktop floating, mobile `MobileElements`), weave display, element keys | InputActions, CombatStates, ElementConfig, Keybinds | ChannelRequest, ElementCaught; CE: ActionBegan/Ended, ChannelFeedback, ControllerElement |
-| SPS/Controllers/QuickSlotController | 354 | Quickcast slots on `QuickSlotHUD`, cooldown display | WeaveInfoConfig, ControllerAim, Keybinds | QuickSlotUse, QuickSlotCooldown; CE: ControllerQuickSlot |
+| SPS/Controllers/QuickSlotController | 534 | Quickcast slots on `QuickSlotHUD`, cooldown display. Desktop: builds a `WovenUI.Slot` in each slot (`SlotN.KitSlot`: recipe glyphs, key, `WeaveStats` mana cost, states empty/suppressed/cooldown/weaveReady/noMana/ready) and applies the board layout to `SlotBar` at runtime (`DesktopAspect`, `DesktopMin` constraints, 44 px above the bottom). Touch keeps the authored parchment tiles and layout | WeaveInfoConfig, ControllerAim, Keybinds, WovenUI, WovenTheme, RS/WeaveStats | QuickSlotUse, QuickSlotCooldown; CE: ControllerQuickSlot |
 | SPS/HeldWardController | 77 | Held-ward aiming UI (`HeldWardHUD`, `WardFloatingWords`) | ProjectileAimService, WardImpactVisual | HeldWardAim, HeldWardStop, WardHitImpact |
 | SPS/Controllers/RockThrowController | 133 | Rock throw aim and fire | ControllerAim, ProjectileAimService, MobileTapGate | RockThrowAction |
 | SPS/Controllers/RockBarrageController | 137 | Rock barrage aim and fire | same | RockBarrageAction |
@@ -76,10 +76,10 @@ Every script is a `LocalScript` with `RunContext = Legacy` unless noted. "L" is 
 | SPS/Controllers/SoloWeaveController | 206 | Solo weave presentation, `WardingLineAlerts` | WeaveConfig, SoloWeavePatterns | SoloWeaveEffects, SoloWeaveFeedback |
 | SPS/Controllers/StillingController | 233 | Stilling contest UI | StillingContestConfig | StillingContest, StillingVisual |
 | SPS/Controllers/ShieldingContestController | 112 | Shielding contest UI | StillingContestConfig | ShieldingContest |
-| SPS/Controllers/CircleController | 407 | Circle linking UI and invites (`CircleControllerInvite`) | WarderSkillConfig, MobileTapGate, ControllerCursor | CircleAction, CircleState |
+| SPS/Controllers/CircleController | 370 | Circle linking UI and invites. Round 1: invite is a Social toast (Accept/Decline, pad A/B as before). | WarderSkillConfig, MobileTapGate, ControllerCursor | CircleAction, CircleState |
 | SPS/Controllers/CircleAbilityController | 295 | Circle ability visuals and input | TempestFade, TempestHelixVisual, CircleAbilityConfig | CircleAbilityVisual, CircleAbilityAction |
 | SPS/Controllers/CircleReworkController | 142 | Circle rework visuals | CircleFlowMotion, CirclePlacementThreads, CharacterBurnVisual | CircleReworkVisual, CircleAbilityVisual |
-| SPS/Controllers/WovenFeedbackController | 488 | Target selection, circle member panel in `CircleUIPosition`, `WovenFeedback` gui | HealingTargeting, CombatTargets, MobileTargetSelection | ThreadVisual, EconomyChanged |
+| SPS/Controllers/WovenFeedbackController | 611 | Target selection, circle member panel in `CircleUIPosition`, `WovenFeedback` gui. Round 1 (WovenUI kit): target frame (name, reason, HP bar), cast ring Raise/Ready/Thrown with caption and ready-window countdown (from the moment `FireballReady` / `RockThrowRockReady` / `RockBarrageReady` / `AirBladesReady` turns true, the server's timeout start, plus WeaveStats `ReadyWindow`), Circle roster (pooled mana, members with mana bars, Leave), daily challenges restyled. Desktop: ring centred, target at 19 % from the top, Circle panel top-right column at 46 %; touch keeps the old spots. | HealingTargeting, CombatTargets, MobileTargetSelection | ThreadVisual, EconomyChanged |
 | SPS/Controllers/QuickProtectController | 23 | Quick-protect effect | – | QuickProtectEffect |
 | SPS/Controllers/WaygateController | 316 | Waygate travel UI and scene | WaygateConfig, WaygateOpeningPose | WaygateEvent |
 
@@ -155,20 +155,22 @@ Every script is a `LocalScript` with `RunContext = Legacy` unless noted. "L" is 
 
 | Path | L | Responsibility | Remotes |
 |---|---|---|---|
-| SPS/HUDController | 724 | `MainHUD` vitals (health/mana), `DamageVignette` | – |
-| SPS/XPUIController | 482 | XP popups on `MainHUD.XPContainer` | ProgressionFeedback |
-| StarterGui/TopHUD/TopHUDController | 274 | Top bar: avatar, XP bar, Book/Settings/Map/Marks slots, hide toggle, PC hotkeys for Marks/Settings/HideHUD | – |
-| SPS/Controllers/StaminaUIController | 66 | `StaminaGui` bar | – |
+| SPS/HUDController | 865 | `MainHUD` vitals, `DamageVignette`. Desktop (Round 1): kit vitals plate built in `VitalsContainer` (silver `Plate`, `PlateScale` UIScale, `PlateBar` in `HealthBarBackground`/`ManaBarBackground`, `StaminaRow`, `BurnoutWarning`); old bar art hidden, row names kept. Health with damage trail; mana (Circle pool when linked) with cost preview from `ClientEvents.ManaPreview`, skipped while `ReadyWeave` is set; burnout shortfall on health = (cost − mana) × `WeaveStats.BurnoutBaseMultiplier` × `BurnoutDamageMultiplier`; BurnoutRecovery/Stilled grey the mana fill. Touch: authored bars unchanged. Desktop/touch decided once at start. | – |
+| SPS/XPUIController | 508 | XP popups on `MainHUD.XPContainer`. Round 1: hides the MainHUD XP bar (XPContainer kept for popups); kill credit and kill XP (`Reason` "Kill") go to one Reward toast; the XP, level-up and bond XP popups and the XP boost pill move down to clear `TopHUD.Bar.InfoLine`. | ProgressionFeedback; CE: Toast |
+| StarterGui/TopHUD/TopHUDController | 384 | Top bar: avatar, XP bar, Book/Settings/Map/Marks slots, hide toggle, PC hotkeys for Marks/Settings/HideHUD. Round 1 (`:276-384`): `Bar.BookSlot.SkillPointBadge` (`SkillPoints`, hidden at 0) and `Bar.InfoLine` (village clock from `DayNightEpoch` + DayNightConfig, `Marks` attribute); V1 bar unchanged. | – |
+| SPS/Controllers/StaminaUIController | 69 | `StaminaGui` bar on touch. Desktop (Round 1): keeps `StaminaGui.Enabled = false`; stamina shows in the vitals plate. | – |
 | SPS/Controllers/BookController (+ ScrapbookPanel module, 660) | 944 | `NewBookHUD`: Basics/Weaves/Skills/Titles/Settings, key rebinding | PlayerSettings (RF), TitlesRequest, TitlesChanged, ChooseElementAlignment, ChangeElementAlignment, ElementSkillPurchase, WarderSkillPurchase, BookReading |
 | SPS/Controllers/EconomyController | 587 | Marks and factions menu (`MarksAndFactionsHUD`), gifts | EconomyRequest, EconomyNotice, EconomyChanged, GiftRequest, GiftNotice, EconomyReady |
 | SPS/MarksShopClient | 254 | `ShopHUD` shop | MarksShopRequest, MarksShopNotice |
-| SPS/Controllers/MinimapController | 838 | `MinimapHUD` and `MapHUD` | MapDiscovery, FactionWarVisual, GuardianBond |
+| SPS/Controllers/MinimapController | 849 | `MinimapHUD` and `MapHUD`. Round 1: on desktop the minimap sits top-right (board: right 32, top 20 of 1600x900; below the top bar if core buttons sit on its right); touch keeps it under the chat bar; nothing else changed. | MapDiscovery, FactionWarVisual, GuardianBond |
 | SPS/Controllers/BookPromptController | 370 | World "read book" prompts (`BookPrompts`) | – |
 | SPS/Controllers/ElementSkillController | 70 | Creates `WovenTopNavigation` and a hidden `BookButton` | – |
-| SPS/Controllers/GuardianBondController | 376 | `GuardianBondHUD` card and panel, TopHUD portrait | GuardianBond, PlayerSettings |
+| SPS/Controllers/GuardianBondController | 516 | Builds the bond UI with WovenUI into `GuardianBondHUD` at runtime and writes the TopHUD portrait. Channeler: parchment `BondCard` (name, distance in studs, Health, Stamina, condition, Mask, Release; no bond XP). Guardian: silver `BondedPanel` (distance, Channeler name, health and mana bars, bond level and XP, Release; no Mask). Both open from TopHUD's BondButton, can be dragged (setting `BondPanelPos`), and Release opens a kit ConfirmDialog. | GuardianBond, PlayerSettings |
 | SPS/Controllers/VillageConversationController | 180 | `VillageConversation` dialogue panel | VillageConversation |
-| SPS/Controllers/LearnedWeaveNotificationController | 21 | SetCore notification on unlock | WeaveLearned |
-| SPS/Controllers/BurnoutRecoveryController | 78 | Burnout notice | – |
+| SPS/Controllers/LearnedWeaveNotificationController | 38 | Unlock toast on a learned weave, with the recipe from WeaveInfoConfig (looked up by display name). Replaced the SetCore notification in Round 1. | WeaveLearned; CE: Toast |
+| SPS/Controllers/BurnoutRecoveryController | 80 | Burnout SetCore notice, touch only. Desktop (Round 1): the status tray's Burnout recovery icon carries the same text. | – |
+| SPS/Controllers/StatusTrayController | 126 | Desktop only (Round 1). Owns runtime ScreenGui `StatusTray`: `WovenUI.StatusIcon` per status with hover tooltip. Stilled (`StilledRemaining`), Silenced (`SilencedRemaining`), Suppressed (`MagicSuppressed`), Burnout recovery (`BurnoutRecoveryEndsAt`), Weave tied (`TiedWeave`), PvP (`PvPMode`), Broken leg (player or character `BrokenLeg`, no timer), Protected (`JoinProtectionUntil`). Refreshes on attribute change and every 0.25 s. Hidden while `PlayScreenActive`. | – |
+| SPS/Controllers/ToastController | 109 | `ToastHUD` (DisplayOrder 120): the toast stack under the minimap (newest on top, 3 shown, the rest wait hidden; auto-dismiss), fed by `ClientEvents.Toast`. Kill credit (Reward), weave learned (Unlock), Circle invite (Social, Accept/Decline) | CE: Toast |
 | SPS/Controllers/GrandShieldHealthController / HealingChargeMeterController | 40/33 | Small meters | – |
 | SPS/Controllers/TitlesChatController / SilenceChatController / SPS/RawSpiritChatController | 20/36/150 | TextChat title tags, Silence chat block, Raw Spirit chat | BookChatReminder |
 | SPS/Controllers/LowDeviceModeController | 79 | `Setting_LowDevice`: shadows off, textures stripped locally | – |
@@ -314,15 +316,15 @@ A rendered version of every ScreenGui below, with its colours, fonts and images,
 | QuickSlotHUD | on / off / 15 | QuickSlotController | MobileLayoutController (positions), VillageConversationController:123,174 (hide during dialogue), BookController:691, WarderTestController (hides) | Quickcast slots | Live |
 | WarderQuickSlotHUD | off / off / 15 | WarderTestController (`:1287`) | – | Guardian sword-form bar | Live in Warder mode only |
 | NewQuickSlot | off / **on** / 0 | none | WarderTestController only adds it to its hide list (`:1195`) | 4 bare ImageButtons | **Legacy / dead** |
-| StaminaGui | off / off / 20 | StaminaUIController (enables when alive) | ResponsiveUIController:23 (bar width) | Stamina bar | Live |
+| StaminaGui | off / off / 20 | StaminaUIController (enables when alive) | ResponsiveUIController:23 (bar width) | Stamina bar | Touch: Live. Desktop (Round 1): kept disabled by StaminaUIController; stamina shows in the MainHUD vitals plate |
 | MobileChannelHUD | off / off / 0 | InputController (`:425`, enables on touch) | KeybindListController (TieButton), MobileLayoutController (positions), WarderTestController (Warder buttons, hides Channel/Confirm/Tie) | Touch Channel, Sprint, Confirm, Tie and Warder buttons | Live, many writers |
 | MobileElements | off / off / 30 | ChannelController | ChannelFeedbackController (skips its buttons), WarderTestController (hides) | Touch element buttons during channel | Live |
 | MobilePVPPlacement | off / on→off at runtime / 0 | MobileHUDLayoutController | MobileLayoutController (position) | Touch PvP button holder | Live |
 | MobileLayoutEditor | off / off / 950 | MobileLayoutController | ScrapbookPanel (opens it) | Layout editor | Live |
 | NewBookHUD | on / off / 1001 at runtime | BookController (+ ScrapbookPanel) | ElementSkillController, MobileHUDLayoutController (anchors to BookButton), EconomyController, MinimapController | Book, skills, settings | Live |
 | ShopHUD | off / off / 0 | MarksShopClient | – | Marks shop | Live |
-| GuardianBondHUD | on / off / 200 | GuardianBondController | – | Bond card and panel | Live |
-| CircleUIPosition | on / off / 0 | WovenFeedbackController (`:85`) | MinimapController:263 (anchor), WarderTestController (hides) | Circle member panel anchor | Live |
+| GuardianBondHUD | on / off / 200 | GuardianBondController | – | Bond card and panel (built in code; only `Target` is authored) | Live |
+| CircleUIPosition | on / off / 0 | WovenFeedbackController (`:186`; positions the Frame at runtime, the authored position is no longer used) | MinimapController:263 (anchor), WarderTestController (hides) | Circle member panel anchor | Live |
 | WarderTestHUD / WarderSwordFormHUD / WarderShowcaseHUD | off / off / on | WarderTestController | – | Warder test HUD, sword-form drawing, showcase caption | Live in Warder mode (Showcase enabled but caption hidden) |
 | TutorialTextPosition | off / on / 0 | ReplicatedFirst/FirstJourneyClient | InputController (gamepad focus list) | Tutorial text | Live (entry flow) |
 | PlayHUD | on / off / 0 | none; PlayEntryClient disables this copy and uses its own clone from ReplicatedFirst | – | Play screen | **Duplicate; StarterGui copy is legacy** |
@@ -333,13 +335,13 @@ A rendered version of every ScreenGui below, with its colours, fonts and images,
 
 Runtime-created guis (not in StarterGui):
 
-- Feedback and overlays: `KeybindList`, `TiedWeaveWords` (**created by both** KeybindListController:22 and SpiritTechniqueController:210), `RawFireWords`, `RawEarthWords`, `RawWaterWords`, `SpiritFloatingWords`, `ChannelGui`, `ChannelFeedbackGui`, `DamageVignette`, `HeldWardHUD`, `WardFloatingWords`, `PvPCrosshairGui` (Shiftlock).
-- Menus and panels: `MinimapHUD`, `MapHUD`, `MarksAndFactionsHUD`, `VillageConversation`, `BookPrompts`, `WovenTopNavigation` (ElementSkillController:16), `WovenAdmin`, `AdminFlightControls`, `CircleControllerInvite`, `CircleScreenFX`, `WovenFeedback`, `WardingLineAlerts`, `WaygateChoices`, `RawSpiritGui`.
+- Feedback and overlays: `KeybindList`, `TiedWeaveWords` (**created by both** KeybindListController:22 and SpiritTechniqueController:210), `RawFireWords`, `RawEarthWords`, `RawWaterWords`, `SpiritFloatingWords`, `ChannelGui`, `ChannelFeedbackGui`, `DamageVignette`, `StatusTray` (StatusTrayController, desktop), `HeldWardHUD`, `WardFloatingWords`, `PvPCrosshairGui` (Shiftlock).
+- Menus and panels: `MinimapHUD`, `MapHUD`, `MarksAndFactionsHUD`, `VillageConversation`, `BookPrompts`, `WovenTopNavigation` (ElementSkillController:16), `WovenAdmin`, `AdminFlightControls`, `ToastHUD` (ToastController), `CircleScreenFX`, `WovenFeedback`, `WardingLineAlerts`, `WaygateChoices`, `RawSpiritGui`.
 - Per-ability feedback HUDs: `*FeedbackHUD`, `DrowningFeedbackHUD`, `MakingFogScreen`, `SpiritStunFeedbackGui`.
 
-**Menu switching.** `RS/Shared/UiManager` is a registry: `Register(id, {isOpen, open, close})` and `Toggle(id)`; Toggle closes the other menus first. Registered menus: `Book` and `Settings` (BookController:860-872), `Marks` (EconomyController:402), `MarksShop` (MarksShopClient:246), `Map` (MinimapController:704), `Gifts` (SettingsController:201, disabled). The open state is mirrored in player attributes (`BookOpen`, `SettingsOpen`, `EconomyOpen`, `MapOpen`, `MarksShopOpen`, …), which TopHUD, Shiftlock, InputController and MobileHUDLayout read.
+**Menu switching.** `RS/Shared/UiManager` is a registry: `Register(id, {isOpen, open, close})` and `Toggle(id)`; Toggle closes the other menus first. Registered menus: `Book` and `Settings` (BookController:860-872), `Marks` (EconomyController:402), `MarksShop` (MarksShopClient:246), `Map` (MinimapController:714), `Gifts` (SettingsController:201, disabled). The open state is mirrored in player attributes (`BookOpen`, `SettingsOpen`, `EconomyOpen`, `MapOpen`, `MarksShopOpen`, …), which TopHUD, Shiftlock, InputController and MobileHUDLayout read.
 
-**Settings.** The settings UI is the Settings section of `ScrapbookPanel`. Toggles at `ScrapbookPanel:63-67`: ScreenShake, SprintToggle, MinimapAlwaysOn, LowDevice, LiveViewport. Values persist as `Setting_<Key>` player attributes, written through the `PlayerSettings` RemoteFunction. Consumers read the attributes directly: ScreenShakeController, SprintController, MinimapController, LowDeviceModeController, TopHUDController:83, MobileLayoutController:134, GuardianBondController:70.
+**Settings.** The settings UI is the Settings section of `ScrapbookPanel`. Toggles at `ScrapbookPanel:63-67`: ScreenShake, SprintToggle, MinimapAlwaysOn, LowDevice, LiveViewport. Values persist as `Setting_<Key>` player attributes, written through the `PlayerSettings` RemoteFunction. Consumers read the attributes directly: ScreenShakeController, SprintController, MinimapController, LowDeviceModeController, TopHUDController:83, MobileLayoutController:134, GuardianBondController:191.
 
 ## 6. VFX and replication pattern on the client
 
@@ -391,7 +393,7 @@ Every client draws every caster's weave VFX locally. The server sends events or 
 |---|---|
 | SPS/HealthRegenController | Superseded by `SCS/Health`. Nothing references it. |
 | SPS/PvPCrosshairController | Superseded by Shiftlock's own `PvPCrosshairGui` (Shiftlock:23-32). |
-| SPS/IncomingWeaveBeamController | Only mentioned in a comment in GuardianBondController:199. |
+| SPS/IncomingWeaveBeamController | Only mentioned in a comment in GuardianBondController:339. |
 | SPS/AirPushCastThreadController, SPS/AirSlashWeaveTrailController | No references. Server `AirSlash` still references `AirSlashThreadRelease`; AirSlashWeaveTrailController was its only listener found. |
 | SPS/Controllers/IncomingThreadController (1305 L) | The server still fires `IncomingThreadVisual` (ActiveAbilityBridge, ChannelerNPCSpells, SpiritStun), but no live client listener connects. Likely dead network traffic. |
 | SPS/Controllers/FireDrawingAnimationController, DreamAnimationBridge, ReadyGroundFlowController, PainContestController | Disabled. The `PainContest` remote still exists. |
@@ -402,7 +404,8 @@ Every client draws every caster's weave VFX locally. The server sends events or 
 - `NewQuickSlot`: no owner; only WarderTestController adds it to its hide list.
 - `SettingsHUD`: only the disabled SettingsController uses it.
 - `StarterGui.PlayHUD`: duplicate of `ReplicatedFirst.PlayHUD`; PlayEntryClient disables it at runtime.
-- `MainHUD.XPContainer` LevelText/XPBackground/XPText: hidden by TopHUDController:104-107. XPUIController still writes to them; only the popups matter.
+- `MainHUD.XPContainer` LevelText/XPBackground/XPText: hidden by XPUIController (Round 1) and TopHUDController:104-107. XPUIController still writes to them; only the popups matter. Keep the instances: both scripts `WaitForChild` them.
+- `CircleControllerInvite` (runtime gui of CircleController, always disabled since invites moved to SetCore): removed in Round 1; the invite is a Social toast.
 - Quick-slot bars: QuickSlotHUD is the live channeler bar, WarderQuickSlotHUD the live Guardian bar (swapped in by WarderTestController), NewQuickSlot is dead.
 
 **Stale or empty:**
@@ -458,7 +461,7 @@ Every client draws every caster's weave VFX locally. The server sends events or 
 
 - **Per-frame load.** 191 per-frame hook sites (RenderStepped / Heartbeat / PreRender / Stepped / BindToRenderStep) across 102 live client scripts. Some exist only during an effect; many run from join to leave and iterate `Players:GetPlayers()` or the actor roster every frame (TempestHandTrails:56, TempestProtectionController:18, ListeningWardVisualController:27, FireballBarrageVisual:77). Cost grows with players × scripts. Main scaling risk; profile on a full server.
 - **ThreadVisualController (3.5k lines)** does all channel-thread work in one PreRender loop (`:2060`) and walks every trail of every thread on each hidden/visible flip. No actor pooling despite its header.
-- **Always-on UI polling loops:** `KeybindListController:420` (Heartbeat), `MobileHUDLayoutController:69` (every 0.25 s), `StaminaUIController:62` (every 0.15 s), `MinimapController:792` (RenderStepped), `InputController:727` (re-sorts navigation every frame). `TrollocDebugOverlay:37` runs a `while true` loop even for non-debug players.
+- **Always-on UI polling loops:** `KeybindListController:420` (Heartbeat), `MobileHUDLayoutController:69` (every 0.25 s), `StaminaUIController:62` (every 0.15 s), `MinimapController:802` (RenderStepped), `InputController:727` (re-sorts navigation every frame). `TrollocDebugOverlay:37` runs a `while true` loop even for non-debug players.
 - **Many writers on one GUI.** MobileChannelHUD, QuickSlotHUD and MainHUD each have four or five writers (§5). WarderTestController forces `Enabled`/`Visible` back to false on property change (`:1185-1191`), so any new feature that toggles those guis will fight it while Warder mode is on.
 - **`TiedWeaveWords`** is created by two scripts (KeybindListController:22, SpiritTechniqueController:210); `FindFirstChild` may pick either.
 - **Startup races:** order-dependent hacks (the 40× sprint-button hide loop, InputController:557-570); `QuickSlotController:17` computes `isMobile` once; `HUDController:23` blocks until the first character, so the HUD stays dead until the entry flow spawns the player.

@@ -288,7 +288,7 @@ Keep this file current: when a system's owner scripts change, update its entry i
 ## Day/night, weather and ambience
 
 - **Server:** `Services/DayNightService`, `Services/TempestWeatherService`, `Server/TempestReadyWeather`, `Server/WovenAmbience`
-- **Client:** `Controllers/TempestWeatherController`, `Controllers/TempestCameraSway`, `SPS/MapAmbientController`, `SPS/MakingFogScreen`
+- **Client:** `Controllers/TempestWeatherController`, `Controllers/TempestCameraSway`, `SPS/MapAmbientController`, `SPS/MakingFogScreen`, `Controllers/MinimapController` (clock above the minimap)
 - **Shared:** `Shared/DayNightConfig`, `Shared/SoundConfig`
 - **Data:** workspace attributes `DayNightStartClock`, `DayNightEpoch`, `DayNightClock`
 - **Doc:** [world.md §4](world.md)

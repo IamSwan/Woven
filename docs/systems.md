@@ -210,10 +210,10 @@ Keep this file current: when a system's owner scripts change, update its entry i
 ## Book
 
 - **Server:** `ServerScriptService/BookPresentationServer`
-- **Client:** `Controllers/BookController` + `ScrapbookPanel`, `Controllers/BookPromptController`, `Controllers/ElementSkillController`, `StarterGui/NewBookHUD`
-- **Shared:** `Shared/BookPageConfig`, `Shared/GuardianBookPages`, `Shared/BookPresentationConfig`
-- **Assets:** `ReplicatedStorage/Assets/OpenBook`
-- **Remotes:** `BookReading`, `BookChatReminder`
+- **Client:** `Controllers/BookController` (shell, tab column, Journal, Weaves / Sword Forms) + `ScrapbookPanel` (Skills, Titles, Settings pages) + `BookPage` (kit page helpers), `Controllers/BookPromptController`, `Controllers/ElementSkillController`, `StarterGui/NewBookHUD` (built at runtime)
+- **Shared:** `Shared/BookPageConfig`, `Shared/GuardianBookPages`, `Shared/BookPresentationConfig`, `Shared/WovenUI` + `WovenTheme` + `WovenGlyphs` (kit), `Shared/WeaveInfoConfig` + `WeaveConfig` + `ReplicatedStorage/WeaveStats` (Weaves page data)
+- **Assets:** `ReplicatedStorage/Assets/OpenBook`; book spread `WovenTheme.Images.BookSpread`
+- **Remotes:** `BookReading`, `BookChatReminder`; from the Book also `QuickSlotAssign`, `WarderTestRequest` ("FormAssign"), `PlayEntry` ("Menu"), `FirstJourney` ("StartFromBook")
 - **Doc:** [client.md §5](client.md)
 
 ## HUD, top bar and menus

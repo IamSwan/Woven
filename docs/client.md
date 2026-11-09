@@ -6,7 +6,7 @@ Related docs: [architecture.md](architecture.md) (whole-game view), [shared.md](
 
 ## 1. Scope
 
-- `StarterPlayer/StarterPlayerScripts`: 51 top-level scripts, plus the `Controllers` folder (139 scripts, including the `AbilityVisuals` modules and `BookController.ScrapbookPanel`).
+- `StarterPlayer/StarterPlayerScripts`: 51 top-level scripts, plus the `Controllers` folder (140 scripts, including the `AbilityVisuals` modules, `BookController.ScrapbookPanel` and `BookController.BookPage`).
 - `StarterPlayer/StarterCharacterScripts`: `Health`, `Shiftlock`, `Init`, `Animate`.
 - `StarterGui`: 21 ScreenGuis and the one script inside them (`TopHUD.TopHUDController`), plus the ScreenGuis that client scripts build at runtime.
 - The shared modules in `RS/Shared` only as far as they explain client behaviour.
@@ -160,7 +160,7 @@ Every script is a `LocalScript` with `RunContext = Legacy` unless noted. "L" is 
 | StarterGui/TopHUD/TopHUDController | 362 | Top bar: avatar, XP bar, Book/Settings/Map/Marks slots, hide toggle, PC hotkeys for Marks/Settings/HideHUD. Round 1 (`:276-362`): `Bar.BookSlot.SkillPointBadge` (`SkillPoints`, hidden at 0) and `Bar.InfoLine` (`Marks` attribute only; hidden while it is unset). The village clock moved to MinimapController on 2026-11-09; V1 bar unchanged. | – |
 | SPS/Controllers/GuiEnableController | 11 | Enables `MainHUD`, `GuardianBondHUD` and `WarderShowcaseHUD` (only these, by name) when they reach PlayerGui with `EnabledInPlay`; no script toggles them, and they are authored disabled so the Edit viewport stays clear. | – |
 | SPS/Controllers/StaminaUIController | 69 | `StaminaGui` bar on touch. Desktop (Round 1): keeps `StaminaGui.Enabled = false`; stamina shows in the vitals plate. | – |
-| SPS/Controllers/BookController (+ ScrapbookPanel module, 660) | 919 | `NewBookHUD`: Basics/Weaves/Skills/Titles/Settings, key rebinding. The Skills tab shows unspent SkillPoints in a pill (authored `NewBookHUD.BookMenuFrame.TabColumn.SkillsTab.Inner.Points`), hidden at 0 like the TopHUD badge. | PlayerSettings (RF), TitlesRequest, TitlesChanged, ChooseElementAlignment, ChangeElementAlignment, ElementSkillPurchase, WarderSkillPurchase, BookReading |
+| SPS/Controllers/BookController (+ ScrapbookPanel module, 482; + BookPage module, 324) | 727 | The Book, per the UI kit board "The Book: Weaves page" (2026-11-09 rework). Builds `NewBookHUD.Book` (book spread `WovenTheme.Images.BookSpread`, `LeftPage` 457×634 at 95,76, `RightPage` 445×634 at 631,76, `Tabs`) and `NewBookHUD.Backdrop` at runtime in kit board px under one `Fit` UIScale = min(W / 1600, H / 920), placed where the 1600×920 board has it; text is raised so it never draws below `WovenTheme.TextMin()` on screen (`BookPage.px`), and nothing truncates: tab strips (74 px, Close 64) grow so their subtitle wraps, row names wrap beside their recipe or note, one-line labels and titles take a second line when needed, chip and button rows wrap, and the title plate shrinks long titles no lower than the floor. Only when the column would leave the screen (tiny touch screens) do the tab subtitles hide. One tab column of bound strips (`Tabs.<Id>Tab`): Journal, Weaves (Guardian: Sword Forms), Skills (red `Points` pill with unspent `SkillPoints`, hidden at 0), Titles, Factions (closes the Book, opens the Factions window), Settings, then the grey `CloseTab` ("B · Esc"). Journal: `BookPageConfig` / `GuardianBookPages` pages, tutorial restart (`StartFromBook`). Weaves: All / Learned / Locked chips, rows with recipe dots (learned first, by `CategoryOrder`), detail with medallions, gold line, description, Mana / Range / Damage / Ready window (from `WeaveStats`, `WeaveConfig[id].Range`, `WeaveInfoConfig` texts), "How to cast" (`BookPageConfig.GetCastHint`), QUICK SLOT buttons 1-5 (`QuickSlot<n>` attribute, assigned one purple; click or drag a learned row or the medallions onto a slot button or the action bar, which rises above the Book while dragging). Unlearned weaves stay "Unwritten weave" unless a mastery tier gates them (`WeaveStats` `GateElement`/`GateTier`, shown as "Fire tier 10"). Sword Forms (Guardian): same layout, stroke drawing, `WarderFormSlot<n>` slots via `WarderTestRequest` "FormAssign". ScrapbookPanel draws the Skills, Titles and Settings pages on the same two pages; Back to Main Menu is on the Settings page behind a `WovenUI.ConfirmDialog` (hidden during the tutorial). Studio-only hook: the `BookKitPreview` player attribute drops the text floor, to compare the layout with the kit board on a small viewport. | PlayerSettings (RF), TitlesRequest, TitlesChanged, TitlesReady, ChooseElementAlignment, ChangeElementAlignment, ElementSkillPurchase, WarderSkillPurchase, BookReading, QuickSlotAssign, WarderTestRequest, PlayEntry ("Menu"), FirstJourney ("StartFromBook") |
 | SPS/Controllers/EconomyController | 587 | Marks and factions menu (`MarksAndFactionsHUD`), gifts | EconomyRequest, EconomyNotice, EconomyChanged, GiftRequest, GiftNotice, EconomyReady |
 | SPS/MarksShopClient | 254 | `ShopHUD` shop | MarksShopRequest, MarksShopNotice |
 | SPS/Controllers/MinimapController | 889 | `MinimapHUD` and `MapHUD`. Round 1: on desktop the minimap column sits top-right (board: right 32, top 20 of 1600x900, clock first; below the top bar if core buttons sit on its right); touch keeps it under the chat bar; nothing else changed. Clock (2026-11-09): `MinimapHUD.Clock`, a pill with the village clock (`DayNightEpoch` + DayNightConfig + `TimeChangeOffset`, else `Lighting.ClockTime`; updated every second) at the minimap's top, centred on its column; the minimap sits 4 px below it (desktop and touch). The clock stays shown when the minimap hides (`Setting_MinimapAlwaysOn` off, no map area) and hides only while `blocked()`. `MinimapBottom` uses the clock's bottom when the minimap is hidden. | MapDiscovery, FactionWarVisual, GuardianBond |
@@ -226,7 +226,7 @@ Every script is a `LocalScript` with `RunContext = Legacy` unless noted. "L" is 
 
 ## 3. Startup and lifecycle
 
-**There is no loader.** Nothing `require`s a controller. The only ModuleScripts under SPS are `ScrapbookPanel`, `SpiritIllusionVisual` and `AbilityVisuals/*`. Roblox starts sibling LocalScripts in no guaranteed order, so scripts sync through:
+**There is no loader.** Nothing `require`s a controller. The only ModuleScripts under SPS are `ScrapbookPanel`, `BookPage` (both under BookController), `SpiritIllusionVisual` and `AbilityVisuals/*`. Roblox starts sibling LocalScripts in no guaranteed order, so scripts sync through:
 
 - `WaitForChild` on shared modules, remotes, PlayerGui children and `ClientEvents`. Used everywhere.
 - `ChildAdded` / `DescendantAdded` watchers for guis that may appear later, for example `ChannelController:648-659` (MobileElements) and `StaminaUIController:59`.
@@ -239,7 +239,7 @@ Every script is a `LocalScript` with `RunContext = Legacy` unless noted. "L" is 
 
 - SPS scripts run once per session and survive respawns. Each handles `CharacterAdded` itself, for example `InputController:632` resets channel and sprint state, and `StaminaUIController:60`.
 - SCS scripts (`Shiftlock`, `Init`, `Animate`, `Health`) are re-cloned into each character. `Shiftlock` re-applies the camera on `CharacterAdded` (`SCS/Shiftlock:155-162`) and reuses `PvPCrosshairGui` if it already exists (`:24-32`).
-- Every StarterGui ScreenGui has `ResetOnSpawn=false` except `TutorialTextPosition`, `MobilePVPPlacement` and `NewQuickSlot`. Several scripts also force `ResetOnSpawn=false` at runtime: `InputController:426`, `ChannelController:653`, `StaminaUIController:28`, `MobileHUDLayoutController:45`, `BookController:114`. Runtime-created guis all set `ResetOnSpawn=false`.
+- Every StarterGui ScreenGui has `ResetOnSpawn=false` except `TutorialTextPosition`, `MobilePVPPlacement` and `NewQuickSlot`. Several scripts also force `ResetOnSpawn=false` at runtime: `InputController:426`, `ChannelController:653`, `StaminaUIController:28`, `MobileHUDLayoutController:45`, `BookController:56`. Runtime-created guis all set `ResetOnSpawn=false`.
 - The one gui-embedded script, `TopHUD.TopHUDController`, therefore runs once.
 
 **State gates set elsewhere.** These player attributes gate most of the HUD:
@@ -261,7 +261,7 @@ Every script is a `LocalScript` with `RunContext = Legacy` unless noted. "L" is 
 `RS/Shared/Keybinds` holds the bind table:
 
 - `M.Actions` defines Id, Group, PC default, Pad default and Context (`Channel`/`Free`/`Fire`/`Quick`/`Any`). Defaults include Q Channel, X Confirm, F/G/V/R/C elements, 1–5 quickcasts, LeftShift Sprint, LeftAlt Shiftlock, B Book, M Map, P Marks, L Settings and H HideHUD.
-- Player overrides live in `Setting_Bind_<Action>_<PC|Pad>` player attributes, written by the server (`PlayerSettingsServer`) after `ScrapbookPanel:224` calls `PlayerSettings:InvokeServer("Bind_"..action.."_"..device, name)`.
+- Player overrides live in `Setting_Bind_<Action>_<PC|Pad>` player attributes, written by the server (`PlayerSettingsServer`) after `ScrapbookPanel:100` calls `PlayerSettings:InvokeServer("Bind_"..action.."_"..device, name)`.
 - `Keybinds.Get/Key/Is/Keys` resolve the bind, `Keybinds.Changed` fires on any `Setting_Bind_` change, and `Keybinds.Conflicts` drives the overlap warning.
 - `M.Allowed` restricts which keys may be bound. WASD, Space, Esc, Tab and `/` are fixed.
 
@@ -276,7 +276,7 @@ Every script is a `LocalScript` with `RunContext = Legacy` unless noted. "L" is 
 - Channel is a **press toggle** with a 0.18 s debounce, decided by the server's `CombatState` attribute (`:335-358`).
 - `beginAction` (`:203`) fires `CE/ActionBegan`. On desktop, PrimaryAction also handles ListeningWard, FoldedLight and Raw Air exceptions, then calls `CastRequest:FireServer(aimPos)` with a camera raycast of 500 studs.
 
-Other scripts read keys themselves with `UIS.InputBegan` plus `Keybinds.Is`: `TopHUDController:239-250` (HideHUD, Marks, Settings), `BookController:873-879` (Book, Esc/B to close), SprintController, QuickSlotController, ChannelController (element keys, `:622`), FireDrawingController, WarderClient and WarderTestController. Ability controllers listen to `CE/ActionBegan` / `ActionEnded` for PrimaryAction instead of reading the mouse directly (Rock, Fireball, AirBlades, Healing, FireHold, Binding, Circle, SpiritTechnique).
+Other scripts read keys themselves with `UIS.InputBegan` plus `Keybinds.Is`: `TopHUDController:239-250` (HideHUD, Marks, Settings), `BookController:676-685` (Book, Esc/B to close; Esc closes an open confirm dialog first), SprintController, QuickSlotController, ChannelController (element keys, `:622`), FireDrawingController, WarderClient and WarderTestController. Ability controllers listen to `CE/ActionBegan` / `ActionEnded` for PrimaryAction instead of reading the mouse directly (Rock, Fireball, AirBlades, Healing, FireHold, Binding, Circle, SpiritTechnique).
 
 ### Gamepad
 
@@ -303,7 +303,7 @@ Other scripts read keys themselves with `UIS.InputBegan` plus `Keybinds.Is`: `To
 - `QuickSlotController:17` uses `TouchEnabled and not KeyboardEnabled`, computed once and never updated.
 - `ResponsiveUIController:16` uses `TouchEnabled or vp.X<760 or vp.Y<500`.
 - `TopHUDController:207` and `MobileHUDLayoutController:32` reimplement TouchUI logic, plus a Studio `ForceTouchUI` attribute in TopHUD.
-- `BookController:109` uses PreferredInput only.
+- `BookController:36` uses PreferredInput only; its kit text floor follows `WovenTheme.TextMin()` (TouchUI).
 
 ## 5. UI map
 
@@ -317,7 +317,7 @@ In the table, "off (EIP)" means authored disabled with `EnabledInPlay`; the owne
 |---|---|---|---|---|---|
 | MainHUD | off (EIP) / off / 0 | HUDController (vitals); enabled by GuiEnableController | XPUIController (XP popups), TopHUDController:104-107 (hides old LevelText/XPBackground/XPText), MobileLayoutController (moves VitalsContainer), WarderTestController (hides mana bar) | Health/mana and the old XP container | Live; XP bar part replaced by TopHUD |
 | TopHUD (+ TopHUDController) | off (EIP) / off / 5 | TopHUDController (`:166-167` enables it off the title screen) | GuardianBondController (portrait), EconomyController, InputController (focuses BookSlot) | Top bar | Live |
-| QuickSlotHUD | off (EIP) / off / 15 | QuickSlotController (`:38` enables it) | MobileLayoutController (positions), VillageConversationController:123,174 (hide during dialogue), BookController:691, WarderTestController (hides) | Quickcast slots | Live |
+| QuickSlotHUD | off (EIP) / off / 15 | QuickSlotController (`:38` enables it) | MobileLayoutController (positions), VillageConversationController:123,174 (hide during dialogue), BookController:577 (hides it while the Book is open) and `:221` (shows it above the Book, DisplayOrder 1002, while a weave is dragged), WarderTestController (hides) | Quickcast slots | Live |
 | WarderQuickSlotHUD | off / off / 15 | WarderTestController (`:1287`) | – | Guardian sword-form bar | Live in Warder mode only |
 | NewQuickSlot | off / **on** / 0 | none | WarderTestController only adds it to its hide list (`:1195`) | 4 bare ImageButtons | **Legacy / dead** |
 | StaminaGui | off / off / 20 | StaminaUIController (enables when alive) | ResponsiveUIController:23 (bar width) | Stamina bar | Touch: Live. Desktop (Round 1): kept disabled by StaminaUIController; stamina shows in the MainHUD vitals plate |
@@ -325,7 +325,7 @@ In the table, "off (EIP)" means authored disabled with `EnabledInPlay`; the owne
 | MobileElements | off / off / 30 | ChannelController | ChannelFeedbackController (skips its buttons), WarderTestController (hides) | Touch element buttons during channel | Live |
 | MobilePVPPlacement | off / on→off at runtime / 0 | MobileHUDLayoutController | MobileLayoutController (position) | Touch PvP button holder | Live |
 | MobileLayoutEditor | off / off / 950 | MobileLayoutController | ScrapbookPanel (opens it) | Layout editor | Live |
-| NewBookHUD | off (EIP) / off / 1001 at runtime | BookController (+ ScrapbookPanel; `:115` enables it) | ElementSkillController, MobileHUDLayoutController (anchors to BookButton), EconomyController, MinimapController | Book, skills, settings | Live |
+| NewBookHUD | off (EIP) / off / 1001 at runtime | BookController (+ ScrapbookPanel, BookPage; `:56` enables it). No authored children since 2026-11-09: `Book`, `Backdrop`, the sounds and the `OpenBook`/`CloseBook`/`OpenSkills`/`ToggleSettings` BindableEvents are made at runtime; ElementSkillController adds `BookButton` | ElementSkillController, MobileHUDLayoutController (anchors to BookButton), EconomyController, MinimapController, SettingsController (`CloseBook`) | Book: journal, weaves, skills, titles, settings | Live |
 | ShopHUD | off / off / 0 | MarksShopClient | – | Marks shop | Live |
 | GuardianBondHUD | off (EIP) / off / 200 | GuardianBondController; enabled by GuiEnableController | – | Bond card and panel (built in code; only `Target` is authored) | Live |
 | CircleUIPosition | off (EIP) / off / 0 | WovenFeedbackController (`:518` sets Enabled every 0.1 s; positions the Frame at runtime, the authored position is no longer used) | MinimapController:263 (anchor), WarderTestController (hides) | Circle member panel anchor | Live |
@@ -343,9 +343,9 @@ Runtime-created guis (not in StarterGui):
 - Menus and panels: `MinimapHUD`, `MapHUD`, `MarksAndFactionsHUD`, `VillageConversation`, `BookPrompts`, `WovenTopNavigation` (ElementSkillController:16), `WovenAdmin`, `AdminFlightControls`, `ToastHUD` (ToastController), `CircleScreenFX`, `WovenFeedback`, `WardingLineAlerts`, `WaygateChoices`, `RawSpiritGui`.
 - Per-ability feedback HUDs: `*FeedbackHUD`, `DrowningFeedbackHUD`, `MakingFogScreen`, `SpiritStunFeedbackGui`.
 
-**Menu switching.** `RS/Shared/UiManager` is a registry: `Register(id, {isOpen, open, close})` and `Toggle(id)`; Toggle closes the other menus first. Registered menus: `Book` and `Settings` (BookController:860-872), `Marks` (EconomyController:402), `MarksShop` (MarksShopClient:246), `Map` (MinimapController:714), `Gifts` (SettingsController:201, disabled). The open state is mirrored in player attributes (`BookOpen`, `SettingsOpen`, `EconomyOpen`, `MapOpen`, `MarksShopOpen`, …), which TopHUD, Shiftlock, InputController and MobileHUDLayout read.
+**Menu switching.** `RS/Shared/UiManager` is a registry: `Register(id, {isOpen, open, close})` and `Toggle(id)`; Toggle closes the other menus first. Registered menus: `Book` and `Settings` (BookController:674-675; `Settings` is the Book open on its Settings page), `Marks` (EconomyController:402), `MarksShop` (MarksShopClient:246), `Map` (MinimapController:714), `Gifts` (SettingsController:201, disabled). The open state is mirrored in player attributes (`BookOpen`, `SettingsOpen`, `EconomyOpen`, `MapOpen`, `MarksShopOpen`, …), which TopHUD, Shiftlock, InputController and MobileHUDLayout read.
 
-**Settings.** The settings UI is the Settings section of `ScrapbookPanel`. Toggles at `ScrapbookPanel:63-67`: ScreenShake, SprintToggle, MinimapAlwaysOn, LowDevice, LiveViewport. Values persist as `Setting_<Key>` player attributes, written through the `PlayerSettings` RemoteFunction. Consumers read the attributes directly: ScreenShakeController, SprintController, MinimapController, LowDeviceModeController, TopHUDController:83, MobileLayoutController:134, GuardianBondController:192.
+**Settings.** The settings UI is the Book's Settings page, drawn by `ScrapbookPanel` (On/Off chips on the left page, key rebinding on the right, Back to Main Menu behind a confirm). Toggles at `ScrapbookPanel:37-43`: ScreenShake, SprintToggle, MinimapAlwaysOn, LowDevice, LiveViewport. Values persist as `Setting_<Key>` player attributes, written through the `PlayerSettings` RemoteFunction. Consumers read the attributes directly: ScreenShakeController, SprintController, MinimapController, LowDeviceModeController, TopHUDController:83, MobileLayoutController:134, GuardianBondController:192.
 
 ## 6. VFX and replication pattern on the client
 
@@ -411,6 +411,7 @@ Every client draws every caster's weave VFX locally. The server sends events or 
 - `MainHUD.XPContainer` LevelText/XPBackground/XPText: hidden by XPUIController (Round 1) and TopHUDController:104-107. XPUIController still writes to them; only the popups matter. Keep the instances: both scripts `WaitForChild` them.
 - `CircleControllerInvite` (runtime gui of CircleController, always disabled since invites moved to SetCore): removed in Round 1; the invite is a Social toast.
 - Quick-slot bars: QuickSlotHUD is the live channeler bar, WarderQuickSlotHUD the live Guardian bar (swapped in by WarderTestController), NewQuickSlot is dead.
+- Old Book layout: removed 2026-11-09 by the kit rework. The authored `NewBookHUD.BookHolderFrame` (Basics/Weaves/Skills/Titles top buttons, two-column left page) and `NewBookHUD.BookMenuFrame` (closed book, `TabColumn` with Exit and MainMenu tabs) are gone, as is ScrapbookPanel's ringed parchment journal. Backup with the old BookController and ScrapbookPanel in `ServerStorage/MCPBackups/BookKitRework_20261109_Before`.
 - Custom weaving: removed 2026-11-09 (server folder, remote, Shared book and Loom modules). Backup in `ServerStorage/MCPBackups/RemoveCustomWeaving_20261109_Before`; the saved library field stays in saves, unread. Saved quick slots holding a `Custom:` id are cleared to empty on load.
 
 **Stale or empty:**

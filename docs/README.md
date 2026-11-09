@@ -75,7 +75,7 @@ The exact rules are in [abilities.md](abilities.md) and [server.md](server.md).
 | Mana, Stamina | The casting resource and the sprint resource, shown as player attributes. |
 | Marks | The currency. It buys shop items, titles, bounties and boosts. |
 | Faction | A player group, account-wide. Factions fight over `FactionZoneEdmondsField` zones. |
-| Book | `NewBookHUD`: the in-game journal with basics, weaves, skills, titles and settings. |
+| Book | `NewBookHUD`: the in-game journal with one tab column: Journal, Weaves (Sword Forms for a Guardian), Skills, Titles, Factions, Settings (with Back to Main Menu). |
 | First Journey | The tutorial. It runs in a reserved server. |
 | Trollocs | The AI enemies. They spawn in `TrollocSpawnRegions` and raid at night. |
 | The Ways / Waygate | Travel between Edmond's Field and the Aiel Waste, from level 75. |

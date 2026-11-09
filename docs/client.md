@@ -165,7 +165,7 @@ Every script is a `LocalScript` with `RunContext = Legacy` unless noted. "L" is 
 | SPS/Controllers/MinimapController | 849 | `MinimapHUD` and `MapHUD`. Round 1: on desktop the minimap sits top-right (board: right 32, top 20 of 1600x900; below the top bar if core buttons sit on its right); touch keeps it under the chat bar; nothing else changed. | MapDiscovery, FactionWarVisual, GuardianBond |
 | SPS/Controllers/BookPromptController | 370 | World "read book" prompts (`BookPrompts`) | – |
 | SPS/Controllers/ElementSkillController | 70 | Creates `WovenTopNavigation` and a hidden `BookButton` | – |
-| SPS/Controllers/GuardianBondController | 516 | Builds the bond UI with WovenUI into `GuardianBondHUD` at runtime and writes the TopHUD portrait. Channeler: parchment `BondCard` (name, distance in studs, Health, Stamina, condition, Mask, Release; no bond XP). Guardian: silver `BondedPanel` (distance, Channeler name, health and mana bars, bond level and XP, Release; no Mask). Both open from TopHUD's BondButton, can be dragged (setting `BondPanelPos`), and Release opens a kit ConfirmDialog. | GuardianBond, PlayerSettings |
+| SPS/Controllers/GuardianBondController | 517 | Builds the bond UI with WovenUI into `GuardianBondHUD` at runtime and writes the TopHUD portrait. Channeler: parchment `BondCard` (name, distance band Near / Nearby / Far with heading, Health, Stamina, condition, Mask, Release; no bond XP). Guardian: silver `BondedPanel` (distance band, Channeler name, health and mana bars, bond level and XP, Release; no Mask). Both open from TopHUD's BondButton, can be dragged (setting `BondPanelPos`), and Release opens a kit ConfirmDialog. | GuardianBond, PlayerSettings |
 | SPS/Controllers/VillageConversationController | 180 | `VillageConversation` dialogue panel | VillageConversation |
 | SPS/Controllers/LearnedWeaveNotificationController | 38 | Unlock toast on a learned weave, with the recipe from WeaveInfoConfig (looked up by display name). Replaced the SetCore notification in Round 1. | WeaveLearned; CE: Toast |
 | SPS/Controllers/BurnoutRecoveryController | 80 | Burnout SetCore notice, touch only. Desktop (Round 1): the status tray's Burnout recovery icon carries the same text. | – |
@@ -341,7 +341,7 @@ Runtime-created guis (not in StarterGui):
 
 **Menu switching.** `RS/Shared/UiManager` is a registry: `Register(id, {isOpen, open, close})` and `Toggle(id)`; Toggle closes the other menus first. Registered menus: `Book` and `Settings` (BookController:860-872), `Marks` (EconomyController:402), `MarksShop` (MarksShopClient:246), `Map` (MinimapController:714), `Gifts` (SettingsController:201, disabled). The open state is mirrored in player attributes (`BookOpen`, `SettingsOpen`, `EconomyOpen`, `MapOpen`, `MarksShopOpen`, …), which TopHUD, Shiftlock, InputController and MobileHUDLayout read.
 
-**Settings.** The settings UI is the Settings section of `ScrapbookPanel`. Toggles at `ScrapbookPanel:63-67`: ScreenShake, SprintToggle, MinimapAlwaysOn, LowDevice, LiveViewport. Values persist as `Setting_<Key>` player attributes, written through the `PlayerSettings` RemoteFunction. Consumers read the attributes directly: ScreenShakeController, SprintController, MinimapController, LowDeviceModeController, TopHUDController:83, MobileLayoutController:134, GuardianBondController:191.
+**Settings.** The settings UI is the Settings section of `ScrapbookPanel`. Toggles at `ScrapbookPanel:63-67`: ScreenShake, SprintToggle, MinimapAlwaysOn, LowDevice, LiveViewport. Values persist as `Setting_<Key>` player attributes, written through the `PlayerSettings` RemoteFunction. Consumers read the attributes directly: ScreenShakeController, SprintController, MinimapController, LowDeviceModeController, TopHUDController:83, MobileLayoutController:134, GuardianBondController:192.
 
 ## 6. VFX and replication pattern on the client
 
@@ -393,7 +393,7 @@ Every client draws every caster's weave VFX locally. The server sends events or 
 |---|---|
 | SPS/HealthRegenController | Superseded by `SCS/Health`. Nothing references it. |
 | SPS/PvPCrosshairController | Superseded by Shiftlock's own `PvPCrosshairGui` (Shiftlock:23-32). |
-| SPS/IncomingWeaveBeamController | Only mentioned in a comment in GuardianBondController:339. |
+| SPS/IncomingWeaveBeamController | Only mentioned in a comment in GuardianBondController:340. |
 | SPS/AirPushCastThreadController, SPS/AirSlashWeaveTrailController | No references. Server `AirSlash` still references `AirSlashThreadRelease`; AirSlashWeaveTrailController was its only listener found. |
 | SPS/Controllers/IncomingThreadController (1305 L) | The server still fires `IncomingThreadVisual` (ActiveAbilityBridge, ChannelerNPCSpells, SpiritStun), but no live client listener connects. Likely dead network traffic. |
 | SPS/Controllers/FireDrawingAnimationController, DreamAnimationBridge, ReadyGroundFlowController, PainContestController | Disabled. The `PainContest` remote still exists. |

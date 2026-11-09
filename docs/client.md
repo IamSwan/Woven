@@ -309,6 +309,8 @@ Other scripts read keys themselves with `UIS.InputBegan` plus `Keybinds.Is`: `To
 
 A rendered version of every ScreenGui below, with its colours, fonts and images, is in the "Live place" part of [ui-kit/index.html](ui-kit/index.html). The "Target design" part of the same page is what we build toward in game: build new or reworked UI toward it. Each live screen there is marked kept, reworked or no target yet.
 
+`StarterGui.ShowDevelopmentGui` is false, so no gui draws in the Edit viewport. Turn it on in StarterGui's properties to preview a gui while editing; it has no effect in Play.
+
 | ScreenGui (StarterGui) | Enabled / ResetOnSpawn / DisplayOrder | Owner script | Other writers | Purpose | Status |
 |---|---|---|---|---|---|
 | MainHUD | on / off / 0 | HUDController (vitals) | XPUIController (XP popups), TopHUDController:104-107 (hides old LevelText/XPBackground/XPText), MobileLayoutController (moves VitalsContainer), WarderTestController (hides mana bar) | Health/mana and the old XP container | Live; XP bar part replaced by TopHUD |

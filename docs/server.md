@@ -75,7 +75,7 @@ All entries are ModuleScripts unless marked. "Start" means the module exposes `S
 
 | Module | Lines | Responsibility | Notes |
 |---|---|---|---|
-| DataService | 900 | Player profile: load, save, cache, leaderstats, session hooks (`OnSession`), save-slot peek (`PeekSlots`: Exists, Level, Class, Kills, LastPlayed, Marks, Title), wipe | Store `PlayerData_V1`. Reads `WarderProgress_v1`. No Start. **No autosave loop**, though its header says there is one (`:2`) |
+| DataService | 931 | Player profile: load, save, cache, leaderstats, session hooks (`OnSession`), save-slot peek (`PeekSlots`: Exists, Level, Class, Kills, LastPlayed, Marks, Title), wipe | Store `PlayerData_V1`. Reads `WarderProgress_v1`. No Start. **No autosave loop**, though its header says there is one (`:2`). Save cards' Marks come from DataService.CardMarks(economy, now): stored Marks plus the 50 daily login Marks when the save hasn't been opened that UTC day; nil when the economy store can't be read. |
 | SaveSession | 22 | Pure map player → open slot; `Key(player, base, suffix, slot)` | Has an assert-based `SelfCheck` child (30 lines) |
 | SaveSlotService | 123 | Save picker (List/Buy/Choose) and account record | Start. Listens `SaveSlot` (RF). Prefetches the account record and every save card (`DataService.PeekSlots`) on PlayerAdded. Store `WovenAccount_v1`. `GrantReceipt` is called from GiftServer |
 | LevelRules | 87 | Pure level rules: legacy migration, Warder level merge, clamp, owner-only commands. `WARDER_STORE = "WarderProgress_v1"` | Has a `SelfCheck` child (66 lines) |
@@ -99,7 +99,7 @@ All entries are ModuleScripts unless marked. "Start" means the module exposes `S
 | RagdollService | 1233 | R15 ragdoll and recovery | Start |
 | MovementStateService | 260 | **Single writer** for WalkSpeed, Jump and AutoRotate; priority states | Start (guarded) |
 | MovementRestrictionService | 397 | Movement locks plus a watchdog for stuck locks | Start |
-| SprintService | 461 | Sprint and stamina | Start. Listens `SprintRequest` |
+| SprintService | 476 | Sprint and stamina. A Guardian (SaveClass Guardian) sprints on WarderStamina through WarderCombatService.SprintStamina, drained at SprintConfig.GuardianDrainPerSecond(WarderStaminaMax, general max); no general Stamina drain or refill for Guardians; a Guardian whose combat session hasn't started can't sprint. | Start. Listens `SprintRequest` |
 | StatModifierService | 134 | Temporary stat modifiers (started by ManaService) | Start |
 | DrowningService, WaterBreathingService | 417 / 30 | Drowning | Start |
 | ContestInputGuard | 52 | Timing guard against autoclickers in contests | |
@@ -145,8 +145,8 @@ All entries are ModuleScripts unless marked. "Start" means the module exposes `S
 
 | Module | Lines | Responsibility | Notes |
 |---|---|---|---|
-| EconomyService | 426 | Marks profile, write lock, reward queue, codes, daily rewards, challenges, kills | Store `WovenEconomy_v1` |
-| EconomyRules / EconomyConfig | 90 / 30 | Pure rules and tunables | |
+| EconomyService | 426 | Marks profile, write lock, reward queue, codes, daily rewards, challenges, kills. Passes SaveClass to Rules.Daily from updateRecord (only for the open save) and E.Touch. | Store `WovenEconomy_v1` |
+| EconomyRules / EconomyConfig | 90 / 30 | Pure rules and tunables. `Rules.Daily(d, uid, now, class)` draws only challenges that fit the class (Rules.Fits: Class == "Any" or the save's class; untagged = Any); on the same day it replaces unclaimed misfits, keeps valid ones and their progress. Challenges entries carry Class (Any / Channeler / Guardian); MeleeHits ("Land 25 melee hits", 75 Marks, event MeleeHit) and Parries ("Parry 3 attacks", 100 Marks, event Parry) are Guardian challenges. | |
 | MockEconomyData | 115 | Studio-only fake economy and factions | |
 | FactionService / FactionNameRegistry / FactionWarService / FactionWarRules | 686 / 102 / 228 / 15 | Factions, names, wars | Stores `WovenFactions_v1`, `WovenFactionNames_v1`, ordered `WovenFactionDirectory_v1`, `WovenFactionActiveWeeks_v1`. Messaging topic `WovenFactionWarWon_v1` |
 | MarksShopService | 197 | Titles, bounties and boosts bought with Marks | Store `WovenBounties_v1` |
@@ -173,8 +173,8 @@ All entries are ModuleScripts unless marked. "Start" means the module exposes `S
 | Module | Lines | Responsibility | Notes |
 |---|---|---|---|
 | WarderService **(Script)** | 89 | Routes melee V1 actions (M1, Block, Dodge). A Script inside the Services folder, so it runs by itself. Gated by `AbilityOwnershipService.Has(p,"warder")` | Listens `WarderRequest` (created if missing) |
-| Warder/WarderState, WarderStun, WarderM1, WarderBlock, WarderDodge, WarderHitbox, WarderSound | 27–93 | Melee V1 parts | |
-| WarderCombatService | 1789 | Warder Combat Test V2 (sword forms, dash, plunge) | Start (called by AdminService.Start). Listens `WarderTestRequest` |
+| Warder/WarderState, WarderStun, WarderM1, WarderBlock, WarderDodge, WarderHitbox, WarderSound | 27–93 | Melee V1 parts. Records economy events MeleeHit (after a successful DealDamage) and Parry (perfect-window block). | |
+| WarderCombatService | 1801 | Warder Combat Test V2 (sword forms, dash, plunge). S.SprintStamina(player, cost): sprint spend on WarderStamina (nil without a session). Records economy events MeleeHit (clean resolve, not on dummies) and Parry. | Start (called by AdminService.Start). Listens `WarderTestRequest` |
 | WarderSkillService | 180 | Guardian skill purchases | Start (called by WarderCombatService.Start). Listens `WarderSkillPurchase` (RF) |
 
 **NPCs and AI**
@@ -260,7 +260,7 @@ All entries are ModuleScripts unless marked. "Start" means the module exposes `S
 5. `FirstJourneyService.Prepare(player)`. If it returns true, set `SessionDataReady=true` (`:72-74`).
 6. **Play.** The client fires `PlayEntry("Play")`. The server checks `SessionDataReady`, may send the player into the tutorial, sets `EnteredWorld=true`, and calls `LoadCharacterAsync` (`PlayEntryServer:125-141`). On death, a respawn is scheduled after `RespawnTime` (`:57-73`).
 7. **Back to Main Menu.** The client fires `PlayEntry("Menu")`, which leads to `DataService.Unload(player)` (`PlayEntryServer:82-105`). On success the character is destroyed, the menu returns, and ServerMain's outer loop waits for the next pick (`ServerMain:76`).
-8. **Unload** (`DataService:890-920`), in order:
+8. **Unload** (`DataService:897-927`), in order:
    1. Clear the profile, which blocks writes through `GetData`.
    2. `savePlayer`. If it fails and the player is not leaving, restore the profile and return false.
    3. Run every hook's `Leave`.
@@ -421,7 +421,7 @@ Registered by:
 - TitlesService: Load.
 - GuardianBondService: Load, Save, Unload.
 
-`OnSession` replays `Load` for profiles that are already loaded (`DataService:876-878`), so registering late is safe.
+`OnSession` replays `Load` for profiles that are already loaded (`DataService:883-885`), so registering late is safe.
 
 ### 5.4 Player attributes (main ones written in this area)
 
@@ -585,6 +585,8 @@ The code uses only a few literal tags: `RawFireSource` (RawFireSourceService), `
 2. New request action: add a branch in `EconomyServer:75-89`. Mutating actions get the `busy`/`rate` limit automatically.
 3. Tunables go in `EconomyConfig`; pure logic in `EconomyRules`.
 
+Challenges are filtered by save class: Eliminations and Assists are Any; Water, Circle, Healing, Casting are Channeler; MeleeHits and Parries are Guardian.
+
 ### 9.6 Add a promo code
 
 Add `["CODE"] = {Enabled=true, Marks=…, XP=…, SkillPoints=…, Boosts=…, ExpiresAt=unix}` in `EconomyConfig.Codes`. Codes are upper-cased and redeemed once per save (`EconomyService:205-223`).
@@ -629,7 +631,7 @@ Use `MovementStateService` states with a priority (e.g. `MoveState.Lock(c, 'Name
 8. **No autosave of the main profile.** `PlayerData_V1` is written only on Unload, shutdown, and incidentally by economy XP delivery. A server crash or a shutdown past the BindToClose budget loses the **whole session's** level, XP, kills, learned weaves and quick slots. Settings and map autosave every 120 s; economy writes on every transaction.
 9. **No session locking.** `UpdateAsync` returns `data` unconditionally (`DataService:570-577`). On a fast rejoin to another server, the new server can load before the old server's leave-save lands; the old save then overwrites the newer one, or the reverse. Back-to-Menu followed by picking the same slot is safe inside one server (`Unloading` blocks it and `PeekSlots` reads uncached), but not across servers.
 10. **Shutdown saves run one after another.** ServerMain's BindToClose calls `SavePlayer` for each player in turn (`ServerMain:98-103`), and `PlayerRemoving → Unload(player, true)` may also run for the same players. With many players, slow DataStore calls can exceed the 30 s budget.
-11. **Leaving after a failed save.** When `leaving=true` and `savePlayer` fails, Unload still continues (`DataService:903`); that progress is lost after one try (no retry in savePlayer).
+11. **Leaving after a failed save.** When `leaving=true` and `savePlayer` fails, Unload still continues (`DataService:910`); that progress is lost after one try (no retry in savePlayer).
 12. **Stuck on the menu.** A failed load kicks the player (`DataService:410`), which is safe. But if `BeyondPattern.ResolveMaxLevel` returns nil, the code returns silently (`:454-455`): no profile, no session, `SessionDataReady` never set (guess whether it can return nil, e.g. on a MarketplaceService error).
 13. **Map discovery is account-wide, not per save** (`MapDiscoveryServer:54,64`, key `u<uid>`). Every other per-save store uses `SaveSession`. May be intentional; undocumented.
 14. **The data-wipe helper is incomplete.** `DeleteStoredData` only removes slot 1 of `PlayerData_V1` (§8). A data-deletion request needs every key in §5.1.

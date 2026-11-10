@@ -70,6 +70,7 @@ Keep this file current: when a system's owner scripts change, update its entry i
 - **Shared:** `Shared/SprintConfig`, `Shared/MovementStates`
 - **Remotes:** `SprintRequest`
 - **Data:** attributes `Stamina`, `MaxStamina`, `IsSprinting`, `MoveState`
+- WarderStamina is the sprint pool for Guardians.
 - **Doc:** [server.md §9.9](server.md)
 
 ## Channeling, weaves and casting
@@ -168,6 +169,7 @@ Keep this file current: when a system's owner scripts change, update its entry i
 - **Shared:** `Shared/ButtonTemplateView`
 - **Remotes:** `EconomyRequest` (RF), `EconomyChanged`, `EconomyReady`, `EconomyNotice`
 - **Data:** `WovenEconomy_v1`; attributes `Marks`, `MarksReady`
+- Daily challenges are filtered by save class.
 - **Doc:** [server.md §9.5–9.6](server.md)
 
 ## Factions and faction war

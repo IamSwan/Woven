@@ -17,7 +17,7 @@ The export is read-only. It changes nothing in the place and needs no Play sessi
 | `tools/ui-kit/docs.mjs` | Reads the UI map in `docs/client.md` §5 (owner, status, runtime-built guis). |
 | `tools/ui-kit/build.mjs` | Builds the page from `ui.json`: downloads missing images, writes tinted copies, embeds fonts, derives tokens. |
 | `tools/ui-kit/target.html` | Target design boards (HTML fragment, CSS scoped under the target wrapper). build.mjs inlines it as part 1 of the page. Paths are relative to docs/ui-kit/. |
-| `tools/ui-kit/glyphs/` | `build-glyphs.mjs` renders every SVG glyph of target.html, white on transparent in 64 px cells, into `woven-glyphs.png` (to upload; uploaded as rbxassetid://93402095334953) and `woven-glyphs.luau` (the WovenGlyphs table); `preview.html` shows them. |
+| `tools/ui-kit/glyphs/` | `build-glyphs.mjs` renders every SVG glyph of target.html, white on transparent in 64 px cells, into `woven-glyphs.png` (to upload; uploaded as rbxassetid://120045707319090) and `woven-glyphs.luau` (the WovenGlyphs table); `preview.html` shows them. |
 | `tools/ui-kit/renderer.js`, `page.js` | Browser code that build.mjs inlines into the page (layout renderer and page controls). |
 | `docs/ui-kit/data/ui.json` | Raw export. |
 | `docs/ui-kit/assets/` | `studio/<assetId>.png` exact pixels read in Studio, `<assetId>.png` public thumbnails, `tint/<id>_<hex>.png`, `images.json` (manifest: source, sha256, placeholder flag), `fonts.css` (Roblox fonts as data URIs), `book-spread.png` (the Book art, studio/118181077777367 cropped, two-column rules removed from the left page). |

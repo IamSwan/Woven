@@ -90,6 +90,7 @@ To refresh only the page (renderer or layout change, or a target.html change, no
 - **Assets.** It reuses the images in `docs/ui-kit/assets` (by asset id) and the fonts in `assets/fonts.css`. The
   only new file is `assets/book-spread.png` (uploaded as rbxassetid://100726567733850): the Book art (studio/118181077777367) cropped, with the old two-column
   rules removed from the left page.
+- **No knot frame.** `.knot` and `.knot-sm` are transparent borders of the same width (20 px, 12 px); the silver knotwork frame (asset 121050680426343) was removed from every board on 2026-11-10.
 - **What is real.** Weave recipes and Fireball's numbers (65 mana, range 60, 15 s ready window), and the save-slot product (2 free, max 10), come from the docs.
   Bracketed labels such as [Player] or [Form 1] are placeholders; levels, kills, Marks and timers are examples.
 - **Top bar.** The V1 `TopHUD` is kept unchanged: same images (with their tints), layout from the export, BuilderSans

@@ -207,7 +207,7 @@ Every script is a `LocalScript` with `RunContext = Legacy` unless noted. "L" is 
 | SPS/OrcMovementVisualController | 175 | Trolloc movement weight and sounds | – |
 | SPS/DetectionUIController | 97 | Trolloc awareness billboard | – |
 | SPS/MapAmbientController | 150 | Distance-culls map emitters, beams and lights | – |
-| SPS/MarksWorldVisuals | 95 | Faction zone ground guides | (OnClientEvent) |
+| SPS/MarksWorldVisuals | 95 | Faction zone ground guides; sky beacon beam and war timer billboard (12 studs above zone centre, AlwaysOnTop) | (OnClientEvent) |
 | SPS/InnTravelClient | 9 | Preloads after inn teleport | InnTravel |
 | SPS/Controllers/WaysAtmosphere | 72 | The Ways atmosphere and party visibility | – |
 | SPS/Controllers/FollowingLightController | 66 | Following lights | – |

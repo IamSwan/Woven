@@ -25,7 +25,7 @@ const GLYPHS = [
   ['earth', 'M2.8 19.5 9 8.5'],
   ['air', 'M3 8.5c2.2-1.8'],
   ['spirit', 'M12.6 12.2a1.2'],
-  ['bond', 'M10 14a4 4 0 0 0 5.7'],
+  ['bond', 'M10 14a4 4 0 0 0 5.7', { aliases: ['catControl'] }], // the Book's Control category chip uses the same chain
   ['lock', 'rect x="6" y="11"', { aliases: ['stilled', 'suppressed'] }],
   ['silenced', 'M4 9h3l5-4v14'],
   ['pvp', 'M4 4l9 9'],
@@ -49,6 +49,14 @@ const GLYPHS = [
   ['form3', 'M5 5l14 14'],
   ['form4', 'M4 8h16'],
   ['form5', 'M6 4v16'],
+  // Book weave-category chips (#t-book). Appended so every glyph above keeps its cell: the uploaded sheet's rects stay valid.
+  ['catAll', 'rect x="4" y="4" width="6.5"'],
+  ['catCombat', 'M5 19 18.5 5.5'],
+  ['catDefensive', 'M12 3 4.5 6v6'],
+  ['catElemental', 'M12 3 20.5 9.2'],
+  ['catUtility', 'M12 21V9'],
+  ['catAdvanced', 'M12 3l2.4 6.1'],
+  ['catCircle', 'circle cx="12" cy="4.5" r="1.6"'],
 ];
 
 // 1. collect unique glyphs (dedupe by inner markup) from target.html

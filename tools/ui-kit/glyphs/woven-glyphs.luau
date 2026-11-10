@@ -4,7 +4,7 @@
 return {
 	SheetId = 93402095334953, -- uploaded glyph sheet (rbxassetid://93402095334953)
 	Cell = 64,
-	Size = Vector2.new(512, 320),
+	Size = Vector2.new(512, 384),
 	Rects = {
 		health = Vector2.new(0, 0),
 		mana = Vector2.new(64, 0),
@@ -41,10 +41,18 @@ return {
 		form3 = Vector2.new(0, 256),
 		form4 = Vector2.new(64, 256),
 		form5 = Vector2.new(128, 256),
+		catAll = Vector2.new(192, 256),
+		catCombat = Vector2.new(256, 256),
+		catDefensive = Vector2.new(320, 256),
+		catElemental = Vector2.new(384, 256),
+		catUtility = Vector2.new(448, 256),
+		catAdvanced = Vector2.new(0, 320),
+		catCircle = Vector2.new(64, 320),
 	},
 	-- other names the kit uses for the same shape
 	Aliases = {
 		burning = "burnout",
+		catControl = "bond",
 		stilled = "lock",
 		suppressed = "lock",
 		weaveBook = "tied",

@@ -39,7 +39,7 @@ Every script is a `LocalScript` with `RunContext = Legacy` unless noted. "L" is 
 | SPS/InputController | 891 | Central PC/gamepad/touch action map. Fires ActionBegan/ActionEnded, primary-action casting, mobile Channel/Confirm/Sprint buttons, gamepad router, floating-word navigation | InputActions, TouchUI, Keybinds, UiManager, SprintConfig, ControllerAim, MobileTapGate, ProjectileAimService, ControllerCursor | CastRequest, HealingAction, FoldedLightAction, SprintRequest, ChannelRequest, ListeningWardAction, FireHoldAction, `<Id>Action` (multi-throw); CE: ActionBegan, ActionEnded, ControllerElement, ControllerQuickSlot |
 | SPS/ChannelInputMode | 8 | Tells the server whether the player is on touch input | – | ChannelInputMode |
 | SPS/ControllerCursorController | 89 | Gamepad virtual cursor toggle | ControllerCursor, Keybinds | CombatStateRequest |
-| SPS/KeybindListController | 430 | Key hint list (`KeybindList` gui, desktop only): the pre-Round-1 (V1) vertical list in the bottom-right corner (`List` frame 220×260, anchored bottom-right at -16/-16, bottom-aligned, right-aligned `Guru` 15 px rows "Key — Action", 4 px gap, grey #cdcdcd, white while pressed), in register order (Shiftlock, Sprint, Tie, Channel, …; Guardian rows in the same column). Round 1's centred strip was reverted on the owner's word. Also the touch "tie weave" button and the `TiedWeaveWords` gui | ControllerAim, TouchUI, WarderGate, WarderSkillConfig, Keybinds, KeyLabel, WovenUI, WovenTheme | TiedWeaveAction |
+| SPS/KeybindListController | 432 | Key hint list (`KeybindList` gui, desktop only): the pre-Round-1 (V1) vertical list in the bottom-right corner (`List` frame 220×260, anchored bottom-right at -16/-16, bottom-aligned, right-aligned `Guru` 15 px rows "Key — Action", 4 px gap, grey #cdcdcd, white while pressed), in register order (Shiftlock, Sprint, Tie, Channel, …; Guardian rows in the same column). Round 1's centred strip was reverted on the owner's word. Also the touch "tie weave" button and the `TiedWeaveWords` gui Guardian Switch rows (GdSwitch, GdPadSwitch) show only with ExtraQuickSlots or WarderFormPage == 2. | ControllerAim, TouchUI, WarderGate, WarderSkillConfig, Keybinds, KeyLabel, WovenUI, WovenTheme | TiedWeaveAction |
 | SPS/CameraController | 27 | Forwards TogglePvP from ActionBegan to the server (no camera code left) | InputActions | CombatStateRequest; CE: ActionBegan |
 | SPS/Controllers/SprintController | 178 | Sprint key (CAS `SprintAction`), toggle-vs-hold setting | SprintConfig, Keybinds | SprintRequest |
 | SPS/Controllers/PowerChannelInputController | 124 | Power Channel release input | – | PowerChannelRelease |
@@ -196,7 +196,7 @@ Every script is a `LocalScript` with `RunContext = Legacy` unless noted. "L" is 
 | SPS/AdminController | 574 | `WovenAdmin` command UI with autocomplete | AdminRequest (RF), AdminNotice |
 | SPS/AdminFlightController | 180 | Admin flight | FireServer (remote name not caught) |
 | SPS/TrollocDebugOverlay | 51 | AI labels while `TrollocDebug` is set | – |
-| SPS/Controllers/WarderTestController | 1661 | Warder Combat Test V2: whole Guardian HUD swap, prediction | WarderTestRequest |
+| SPS/Controllers/WarderTestController | 1673 | Warder Combat Test V2: whole Guardian HUD swap, prediction Desktop: wireBar adds a runtime PlateBar (WovenUI.Bar, stamina or posture hue and glyph) to MainHUD.VitalsContainer.WarderStaminaBar and WarderPostureBar and hides their V1 art; touch keeps the V1 bars. | WarderTestRequest |
 
 ### 2.8 NPC and world
 

@@ -53,7 +53,7 @@ Columns: **Dir** is the direction (C→S, S→C, or both). **Fired by** and **Ha
 | `Remotes/BookReading` | RemoteEvent | both | C: `SPS/C/BookController:604` (close), `:640` (open). S: `SSS/BookPresentationServer:33`,`:37` | S: `SSS/BookPresentationServer:64`. C: `SPS/C/BookController:659` | C→S `(wantsOpen: bool)`; S→C `(allowed: false)` |
 | `Remotes/TitlesChanged` (RT, `TitlesService:621`) | RemoteEvent | S→C | `SSS/Server/Services/TitlesService:179`,`:300` | `SPS/C/BookController:660` (passes it to ScrapbookPanel) | `(list)` |
 | `Remotes/TitlesReady` (RT, `:627`) | RemoteEvent | C→S | `SPS/C/BookController:665` | `TitlesService:632` | `()` |
-| `Remotes/TitlesRequest` (RT, `:637`) | RemoteFunction | C→S | `SPS/C/BookController/ScrapbookPanel:62` ("List"), `:325` ("Equip") | `TitlesService:641` | `("List")`, `("Equip", id)` |
+| `Remotes/TitlesRequest` (RT, `:637`) | RemoteFunction | C→S | `SPS/C/BookController/ScrapbookPanel:63` ("List"), `:346` ("Equip") | `TitlesService:641` | `("List")`, `("Equip", id)` |
 | `Remotes/MissionsChanged` (RT, `SSS/Server/MissionsServer:10`) | RemoteEvent | S→C | `MissionsServer:21` | **no client listener found** | `(state)` |
 | `Remotes/MissionsReady` (RT, `:25`) | RemoteEvent | C→S | **no client fire found** | `MissionsServer:30` | `()` |
 | `Remotes/MapDiscovery` | RemoteEvent | both | C: `SPS/C/MinimapController:844` ("Request"). S: `SSS/MapDiscoveryServer:45` ("Full"), `:103` ("Reveal") | S: `SSS/MapDiscoveryServer:82`. C: `SPS/C/MinimapController:740` | S→C `(action, areaId, payload)` |

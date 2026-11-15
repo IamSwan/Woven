@@ -220,8 +220,8 @@ Keep this file current: when a system's owner scripts change, update its entry i
 
 ## HUD, top bar and menus
 
-- **Client:** `SPS/HUDController` (`MainHUD`, desktop vitals plate), `Controllers/StatusTrayController` (`StatusTray`), `StarterGui/TopHUD/TopHUDController`, `Controllers/StaminaUIController`, `SPS/KeybindListController`, `Controllers/ResponsiveUIController`, `Controllers/LowDeviceModeController`
-- **Shared:** `Shared/UiManager`, `Shared/TopButtonTheme`, `Shared/ScreenEffectLayout`
+- **Client:** `SPS/HUDController` (`MainHUD`, desktop vitals plate), `Controllers/StatusTrayController` (`StatusTray`), `StarterGui/TopHUD/TopHUDController`, `Controllers/StaminaUIController`, `SPS/KeybindListController`, `Controllers/ResponsiveUIController`, `Controllers/LowDeviceModeController`, `Controllers/PlayerListController`
+- **Shared:** `Shared/UiBlock`, `Shared/UiManager`, `Shared/TopButtonTheme`, `Shared/ScreenEffectLayout`
 - **Doc:** [client.md §5](client.md)
 
 ## Mobile layout

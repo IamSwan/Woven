@@ -81,6 +81,7 @@ Woven is a Roblox action RPG (Studio title "[WARDERS] Woven", PlaceId 1031405489
 - Client scripts start in no fixed order. `WaitForChild` what you need, handle `CharacterAdded` yourself, and give each ScreenGui exactly one owner script.
 - Keybinds live only in `Shared/Keybinds`. Add a new action Id instead of changing a default, because saved binds override defaults.
 - Detect touch with `Shared/TouchUI.IsTouchUI()`. Register menus with `Shared/UiManager`.
+- A menu or dialog sets a LocalPlayer `<Name>Open` attribute (or its existing one) listed in `Shared/UiBlock.Attrs`, and registers with `Shared/UiManager`. Input that casts or acts in the world checks `UiBlock.IsOpen()` first. A panel that takes clicks has an `Active` backing frame so clicks don't reach the world.
 - Break require cycles with a lazy `require` inside the function, as the existing services do.
 - No secrets in scripts. Use `HttpService:GetSecret`.
 

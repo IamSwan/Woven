@@ -129,7 +129,7 @@ Keep this file current: when a system's owner scripts change, update its entry i
 ## Stilling, Silence, Compulsion and status effects
 
 - **Server:** `Services/StillingService`, `Abilities/CircleAbilities/Stilling`, `Services/SilenceService`, `Services/StatusDurationService`, `Services/CompulsionService`, `Services/SpiritTechniqueService`, `Services/ShieldingContestService`, `Services/ContestInputGuard`, `Server/VoluntaryReset`
-- **Client:** `Controllers/StillingController`, `Controllers/ShieldingContestController`, `Controllers/SilenceChatController`, `Controllers/CompulsionController`, `Controllers/SpiritTechniqueController`, `Controllers/VoluntaryResetController`, `Controllers/StatusTrayController` (desktop status icons)
+- **Client:** `Controllers/StillingController`, `Controllers/ShieldingContestController`, `Controllers/SilenceChatController`, `Controllers/CompulsionController`, `Controllers/SpiritTechniqueController`, `Controllers/VoluntaryResetController`, `Controllers/StatusTrayController` (status icons, desktop and touch)
 - **Shared:** `Shared/StillingContestConfig`
 - **Remotes:** `StillingContest`, `StillingVisual`, `ShieldingContest`, `SilenceVisual`, `CompulsionVisual`, `SpiritTechnique`, `VoluntaryCharacterReset`
 - **Data:** `WovenAccount_v1` (`StilledRemaining`); attributes `Stilled`, `Silenced`, `MagicSuppressed`
@@ -227,8 +227,8 @@ Keep this file current: when a system's owner scripts change, update its entry i
 ## Mobile layout
 
 - **Server:** `ServerScriptService/PlayerSettingsServer` (stores the layout)
-- **Client:** `Controllers/MobileLayoutController`, `SPS/MobileHUDLayoutController`, `StarterGui/MobileChannelHUD`, `MobileElements`, `MobilePVPPlacement`, `MobileLayoutEditor`
-- **Shared:** `Shared/TouchUI`, `Shared/MobileTapGate`
+- **Client:** `Controllers/MobileLayoutController`, `SPS/MobileHUDLayoutController`, `StarterGui/MobileChannelHUD`, `MobileElements`, `MobilePVPPlacement`, `MobileLayoutEditor`, `Controllers/StatusTrayController` (touch tray)
+- **Shared:** `Shared/TouchUI`, `Shared/MobileTapGate`, `Shared/UiBlock`
 - **Remotes:** `PlayerSettings`, `ChannelInputMode`
 - **Data:** `Setting_MobileLayout`
 - **Doc:** [client.md §4, §9](client.md)

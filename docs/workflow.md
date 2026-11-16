@@ -28,7 +28,7 @@ This is how to make, check, ship and clean up a change, given that the game live
 | Trolloc dev | `Services/Trollocs/TrollocDevCommands`, `ServerStorage.TrollocDev` (BindableFunction, Studio only), `TrollocDebugOverlay` | Spawn and inspect Trollocs. |
 | Tutorial QA | `Workspace` attribute `TestFirstJourney`, `ServerStorage.FirstJourneyTestAdvance` | Run the First Journey in Studio and step through it. |
 | Menu preview | `ReplicatedFirst/PlayEntryClient` attribute `PreviewInStudio` | Show the menu in Studio. By default the menu is skipped there. |
-| Touch simulation | Player attribute `ForceTouchUI` (Studio only) | Force the touch UI. Only TopHUD and MobileLayoutController honour it. |
+| Touch simulation | Player attribute `ForceTouchUI` (Studio only) | Force the touch UI. `TouchUI` honours it, so every touch test does. |
 | Debug logging | `Shared/DebugLog` attribute `DebugLogging` | Gated prints. No live script uses it yet. |
 | Edit-mode self-checks | `Services/LevelRules/SelfCheck`, `Services/SaveSession/SelfCheck`; `Shared/WarderSwordForms/SelfCheck` needs Play | Assert-based. Run with `require(...)()`. |
 | Admin panel | `StarterPlayerScripts/AdminController`, `AdminFlightController`, `Services/AdminService`, `Services/AdminConfig` | Commands, raids, flight, Warder test, moderation. Access: owners, the panel allow-list, group admins and moderators. |

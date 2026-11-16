@@ -202,7 +202,7 @@ How to clean these up safely: [workflow.md §9](workflow.md).
 
 **HttpService.HttpEnabled:** true.
 
-**StarterGui:** ResetPlayerGuiOnSpawn true, ScreenOrientation Sensor.
+**StarterGui:** ResetPlayerGuiOnSpawn true, ScreenOrientation LandscapeSensor.
 
 **StarterPlayer**
 

@@ -107,7 +107,7 @@ State lives in five places:
 | Where | What | Writers | Readers |
 |---|---|---|---|
 | **Player attributes** | `CombatState`, `ReadyWeave`, `<Id>Active`/`<Id>Ready`, `Mana`, `Stamina`, `XP`, `<Element>Tier`, `SaveSlot`, `SessionDataReady`, `EnteredWorld`, `Setting_*`, suppression flags (`Stilled`, `MagicSuppressed`, …) | Server only | Server and every client (replicated) |
-| **Client UI flags** (player attributes) | `PlayScreenActive`, `BookOpen`, `SettingsOpen`, `EconomyOpen`, `MapOpen`, `MarksShopOpen`, `MobileLayoutEditing`, … | The local client | Local client scripts (TopHUD, Shiftlock, InputController) |
+| **Client UI flags** (player attributes) | `PlayScreenActive`, `BookOpen`, `SettingsOpen`, `EconomyOpen`, `MapOpen`, `MarksShopOpen`, `MobileLayoutEditing`, `BondCardOpen`, … | The local client | Local client scripts (TopHUD, Shiftlock, InputController) |
 | **Character attributes** | `IFrames`, `Dodging`, `Blocking`, `Stunned`, `IsRagdolled`, `MoveState`, … | Server | Server and clients |
 | **Server tables** | Active weaves, ability sessions, cast locks, damage history, economy cache and queues, open save slots | Owning service | Server only |
 | **Instances** | Workspace runtime folders (`ActiveAbilityEffects`, `ActiveThreads`, `RawEarthEffects`, `SoloWeaveEffects`, `NPC`), ReplicatedStorage session folders (`FireHoldSessions`, `RawFireSessions`, `FollowingLights`) | Server (client for `ActiveThreads`) | Clients decorate them |

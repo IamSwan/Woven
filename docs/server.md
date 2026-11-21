@@ -99,7 +99,7 @@ All entries are ModuleScripts unless marked. "Start" means the module exposes `S
 | RagdollService | 1233 | R15 ragdoll and recovery | Start |
 | MovementStateService | 260 | **Single writer** for WalkSpeed, Jump and AutoRotate; priority states | Start (guarded) |
 | MovementRestrictionService | 397 | Movement locks plus a watchdog for stuck locks | Start |
-| SprintService | 476 | Sprint and stamina. A Guardian (SaveClass Guardian) sprints on WarderStamina through WarderCombatService.SprintStamina, drained at SprintConfig.GuardianDrainPerSecond(WarderStaminaMax, general max); no general Stamina drain or refill for Guardians; a Guardian whose combat session hasn't started can't sprint. | Start. Listens `SprintRequest` |
+| SprintService | 476 | Sprint and stamina. A Guardian (SaveClass Guardian) sprints on WarderStamina through WarderCombatService.SprintStamina, drained at SprintConfig.GuardianDrainPerSecond(WarderStaminaMax, general max); no general Stamina drain or refill for Guardians; a Guardian whose combat session hasn't started can't sprint. | Start, ForceRelease, Refill (NoMoreFatigue cast). Listens `SprintRequest` |
 | StatModifierService | 134 | Temporary stat modifiers (started by ManaService) | Start |
 | DrowningService, WaterBreathingService | 417 / 30 | Drowning | Start |
 | ContestInputGuard | 52 | Timing guard against autoclickers in contests | |

@@ -110,7 +110,7 @@ Shorthand: **R** = key requires, **Rm** = remotes used (`*` = created at runtime
 | `RawEarth` | 660 | Raw Earth state machine | Generic | RawEarthAction* (listens), RawEarthVisual*, **also listens to ChannelRequest** (`:630`) |
 | `AirSlash` | 77 | Curved Air projectile (SoloWeaveRuntime) | Generic | AirSlashThreadRelease |
 | `Tornado` | 144 | Air×6 column; Air T10 | Generic | CircleReworkVisual |
-| `NoMoreFatigue` | 37 | Stamina-immunity buff | Generic | MarksShopNotice |
+| `NoMoreFatigue` | 37 | Refills stamina to max, then 60 s of no stamina drain (SprintService.Refill) | Generic | MarksShopNotice |
 | `ListeningWard` | 78 | Voice-relay ward | Generic | ListeningWardAction (listens) |
 | `BoneBreak` | 189 | Two-snap curse | Generic | BoneBreakVisual |
 | `Silence` | 83 | Chat/cast suppression | Generic | SilenceVisual |
